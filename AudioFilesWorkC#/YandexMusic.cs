@@ -1,0 +1,104 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AudioFilesWorkC_
+{
+    internal class YandexMusic
+    {
+        public string? PathYndexMusicDir
+        {
+            get; private set;
+        }
+        public string? PathMusicSours { get; private set; }
+        public string? PathDBSqlite { get; private set; }
+        public YandexMusic()
+        {
+
+            PathYndexMusicDir = _get_path_yndex_music();
+            PathMusicSours = _get_path_music_sours_dir(PathYndexMusicDir);
+            PathDBSqlite = _get_path_db_sqlite(PathYndexMusicDir);
+
+
+        }
+
+
+
+        private string? _get_path_yndex_music()
+        {
+            string user_dict = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
+
+            string path1 = Path.Combine(user_dict, @"AppData\Local\Packages");
+            string yandex = "Yandex.Music_";
+            string path2 = "LocalState";
+            string? _path_yndex_music = null;
+            foreach (var dir in Directory.GetDirectories(path1))
+            {
+                if (dir.Contains(yandex))
+                {
+                    _path_yndex_music = Path.Combine(dir, path2);
+                    break;
+                }
+
+            }
+            if (_path_yndex_music == null)
+                throw new Exception($"{path1}\\...{yandex}... not found.");
+            else
+                return _path_yndex_music;
+        }
+
+
+        private string? _get_path_music_sours_dir(string? path)
+        {
+            string music = "Music";
+            string? path_music_files = null;
+            if (path != null)
+                foreach (var dir in Directory.GetDirectories(path))
+                {
+                    if (dir.Contains(music))
+                    {
+                        foreach (var d in Directory.GetDirectories(dir))
+                        {
+                            foreach (var file in Directory.GetFiles(d))
+                            {
+                                if (new FileInfo(file).Extension.ToLower() == ".mp3")
+                                    path_music_files = d; break;
+                            }
+                        }
+                    }
+
+                }
+            if (path_music_files == null)
+            {
+                throw new Exception($"{path}\\{music}\\..?  not found.");
+            }
+            return path_music_files;
+        }
+
+        private string? _get_path_db_sqlite(string? path)
+        {
+            string? path_db = null;
+            if (path != null)
+                foreach (var file in Directory.GetFiles(path))
+                {
+                    if (new FileInfo(file).Extension.ToLower() == ".sqlite")
+                    {
+                        path_db = file;
+                        break;
+                    }
+                }
+            if (path_db == null)
+            {
+                throw new Exception($"{path}\\..DB.sqlite  not found.");
+            }
+            else
+            {
+                return path_db;
+            }
+
+        }
+    }
+}
