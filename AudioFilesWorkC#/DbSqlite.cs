@@ -10,10 +10,6 @@ namespace AudioFilesWorkC_
     internal static class DbSqlite
     {
         public static string[] values = new string[] { "5" };
-        public static Dictionary<string, string> dic_query = new Dictionary<string, string>()
-        {
-            {"get_count_track", "SELECT Count(TrackId) FROM T_PlaylistTrack WHERE Kind = @value;" }
-        };
         public static string Get_str_connection(string? data_sours, string mode = "ReadOnly", Dictionary<string, string>? paramss = null)
         {
             string str = $"Data Source={data_sours};Mode={mode};";

@@ -35,7 +35,6 @@ namespace AudioFilesWorkC_
                     DbSqlite.ExecuteReader(sql_conn, str3, ("Name", "GetString"),  item, lp_title);
                     DbSqlite.ExecuteReader(sql_conn, str4, ("ArtistId", "GetString"),  item, lp_title);
                     List<SqliteParameter> lp_artist = DbSqlite.Get_list_params(new Dictionary<string, string> { { "value", item.ArtistId! } });
-
                     DbSqlite.ExecuteReader(sql_conn, str5, ("Artist", "GetString"),  item, lp_artist);
                     Console.WriteLine($"TrackId:{item.TrackId}, Name:{item.Name}, ArtistId:{item.ArtistId}, Artist:{item.Artist}");
                 }
