@@ -58,6 +58,7 @@ namespace AudioFilesWorkC_
 
         public static SqliteParameter Get_sql_parametr(string name, string value)
         {
+
             SqliteParameter par = new SqliteParameter(name, value);
             return par;
 
@@ -73,7 +74,7 @@ namespace AudioFilesWorkC_
             return sqliteParameters;
         }
 
-        public static void ExecuteReader(string str_connection, string sqlExpression, Dictionary<string, string> property_names, out Track[] traks, List<SqliteParameter>? sql_params = null)
+        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method, ref Track[] tracks, List<SqliteParameter>? sql_params = null)
         {
             using (var connection = new SqliteConnection(str_connection))
             {
@@ -90,13 +91,54 @@ namespace AudioFilesWorkC_
                 {
                     if (reader.HasRows) // если есть данные
                     {
+                        int n = 0;
+                        var type_track = typeof(Track);
+                        var property_track = type_track.GetProperty(property_method.Item1);
+                        var type_reader = reader.GetType();
+                        var method_reader = type_reader.GetMethod(property_method.Item2);
                         while (reader.Read())   // построчно считываем данные
                         {
-                            var id = reader.GetValue(0);
-                            var name = reader.GetValue(1);
-                            var age = reader.GetValue(2);
+                            Track track = tracks[n++];
+                            var res = method_reader?.Invoke(reader, parameters: new object[] { 0 });
+                            property_track?.SetValue(track, res);
 
-                            Console.WriteLine($"{id} \t {name} \t {age}");
+                 
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method,  Track track, List<SqliteParameter>? sql_params = null)
+        {
+            using (var connection = new SqliteConnection(str_connection))
+            {
+                connection.Open();
+                SqliteCommand command = new SqliteCommand(sqlExpression, connection);
+                if (sql_params != null)
+                {
+                    foreach (var item in sql_params)
+                    {
+                        command.Parameters.Add(item);
+                    }
+                }
+                using (SqliteDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.HasRows) // если есть данные
+                    {
+                        int n = 0;
+                        var type_track = typeof(Track);
+                        var property_track = type_track.GetProperty(property_method.Item1);
+                        var type_reader = reader.GetType();
+                        var method_reader = type_reader.GetMethod(property_method.Item2);
+                        while (reader.Read())   // построчно считываем данные
+                        {
+                            //Track track = tracks[n++];
+                            var res = method_reader?.Invoke(reader, parameters: new object[] { 0 });
+                            property_track?.SetValue(track, res);
+
+
                         }
                     }
                 }
