@@ -106,25 +106,28 @@ namespace AudioFilesWorkC_
 
         public string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
 
-        public FileInfo CopyTo(Track track, bool isRename = true)
+        public FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
         {
-            if (Path.Exists(PathCopyTo)!) throw new ArgumentException($"PathMusicSours :{PathCopyTo} - There is no such way.");
-            string sours = Path.Combine(PathMusicSours!, track.TrackId + ".mp3");
-            string destination = "";
+            if (Path.Exists(destination)!) throw new ArgumentException($"Path:{destination} - There is no such way.");
+            string _sours = Path.Combine(sours!, track.TrackId + ".mp3");
+            string _destination = "";
             if (isRename)
-                destination = Path.Combine(PathCopyTo, GetName(track));
+                _destination = Path.Combine(destination, GetName(track));
             else
-                destination = Path.Combine(PathCopyTo, track.TrackId + ".mp3");
-            FileInfo file = new FileInfo(sours);
+                _destination = Path.Combine(destination, track.TrackId + ".mp3");
+            FileInfo file = new FileInfo(_sours);
 
             try
             {
-                if (file.Exists) { file = file.CopyTo(destination, true); }
+                if (file.Exists)
+                { file = file.CopyTo(_destination, true); }
+                else
+                    throw new ArgumentException($"Path:{_destination} - there is no such file");
             }
             catch (Exception ex)
             {
 
-                throw new Exception(ex. Message);
+                throw new Exception(ex.Message);
             }
             return file;
 

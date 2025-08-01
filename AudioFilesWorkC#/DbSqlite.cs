@@ -24,10 +24,9 @@ namespace AudioFilesWorkC_
             return str;
         }
 
-        public static int ExecuteScalar(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
+        public static object? ExecuteScalar(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
         {
             object? val = 0;
-            int res = 0;
             using (var connection = new SqliteConnection(str_connection))
             {
                 connection.Open();
@@ -41,8 +40,7 @@ namespace AudioFilesWorkC_
                 }
                 val = command.ExecuteScalar();
             }
-            res = Convert.ToInt32(val);
-            return res;
+            return val;
         }
 
         public static SqliteParameter Get_sql_parametr(string name, int value)
