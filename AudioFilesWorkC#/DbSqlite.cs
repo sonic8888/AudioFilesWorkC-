@@ -121,16 +121,15 @@ namespace AudioFilesWorkC_
                 }
                 using (SqliteDataReader reader = command.ExecuteReader())
                 {
-                    if (reader.HasRows) // если есть данные
+                    if (reader.HasRows) 
                     {
                         int n = 0;
                         var type_track = typeof(Track);
                         var property_track = type_track.GetProperty(property_method.Item1);
                         var type_reader = reader.GetType();
                         var method_reader = type_reader.GetMethod(property_method.Item2);
-                        while (reader.Read())   // построчно считываем данные
+                        while (reader.Read())   
                         {
-                            //Track track = tracks[n++];
                             var res = method_reader?.Invoke(reader, parameters: new object[] { 0 });
                             property_track?.SetValue(track, res);
 

@@ -16,6 +16,8 @@ namespace AudioFilesWorkC_
         //public int? FileSize { get; set; }
         public string? ArtistId { get; set; }
 
+        public string? NameArtist {  get; set; }
+
 
 
         public Track() { }

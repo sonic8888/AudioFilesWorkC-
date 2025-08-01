@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,25 +10,27 @@ namespace AudioFilesWorkC_
 {
     internal class YandexMusic
     {
-        public string? PathYndexMusicDir
+        public string? PathYandexMusicDir
         {
             get; private set;
         }
         public string? PathMusicSours { get; private set; }
         public string? PathDBSqlite { get; private set; }
+
+        public string PathCopyTo { get; set; } = "";
         public YandexMusic()
         {
 
-            PathYndexMusicDir = _get_path_yndex_music();
-            PathMusicSours = _get_path_music_sours_dir(PathYndexMusicDir);
-            PathDBSqlite = _get_path_db_sqlite(PathYndexMusicDir);
+            PathYandexMusicDir = _get_path_yandex_music();
+            PathMusicSours = _get_path_music_sours_dir(PathYandexMusicDir);
+            PathDBSqlite = _get_path_db_sqlite(PathYandexMusicDir);
 
 
         }
 
 
 
-        private string? _get_path_yndex_music()
+        private string? _get_path_yandex_music()
         {
             string user_dict = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
 
@@ -100,5 +103,34 @@ namespace AudioFilesWorkC_
             }
 
         }
+
+        public string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
+
+        public FileInfo CopyTo(Track track, bool isRename = true)
+        {
+            if (Path.Exists(PathCopyTo)!) throw new ArgumentException($"PathMusicSours :{PathCopyTo} - There is no such way.");
+            string sours = Path.Combine(PathMusicSours!, track.TrackId + ".mp3");
+            string destination = "";
+            if (isRename)
+                destination = Path.Combine(PathCopyTo, GetName(track));
+            else
+                destination = Path.Combine(PathCopyTo, track.TrackId + ".mp3");
+            FileInfo file = new FileInfo(sours);
+
+            try
+            {
+                if (file.Exists) { file = file.CopyTo(destination, true); }
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex. Message);
+            }
+            return file;
+
+        }
+
+
+
     }
 }
