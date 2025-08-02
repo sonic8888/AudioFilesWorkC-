@@ -10,7 +10,7 @@ namespace AudioFilesWorkC_
     internal static class DbSqlite
     {
         public static string[] values = new string[] { "5" };
-        public static string Get_str_connection(string? data_sours, string mode = "ReadOnly", Dictionary<string, string>? paramss = null)
+        public static string Get_str_connection(string? data_sours, string mode = "ReadWriteCreate", Dictionary<string, string>? paramss = null)
         {
             string str = $"Data Source={data_sours};Mode={mode};";
             if (paramss != null)
@@ -136,6 +136,23 @@ namespace AudioFilesWorkC_
                     }
                 }
 
+            }
+        }
+
+        public static void ExecuteNonQuery(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
+        {
+            using (var connection = new SqliteConnection(str_connection))
+            {
+                connection.Open();
+                SqliteCommand command = new SqliteCommand(sqlExpression, connection);
+                if (sql_params != null)
+                {
+                    foreach (var item in sql_params)
+                    {
+                        command.Parameters.Add(item);
+                    }
+                }
+                command.ExecuteNonQuery();
             }
         }
     }
