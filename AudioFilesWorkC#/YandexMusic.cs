@@ -10,51 +10,51 @@ namespace AudioFilesWorkC_
 {
     internal class YandexMusic
     {
-        public string? PathYandexMusicDir
+        public static string? PathYandexMusicDir
         {
             get; private set;
         }
-        public string? PathMusicSours { get; private set; }
-        public string? PathDBSqlite { get; private set; }
+        public static string? PathMusicSours { get; private set; }
+        public static string? PathDBSqlite { get; private set; }
 
-        public string PathCopyTo { get; set; } = "";
+        public static string PathCopyTo { get; set; } = "";
         public YandexMusic()
         {
 
-            PathYandexMusicDir = _get_path_yandex_music();
-            PathMusicSours = _get_path_music_sours_dir(PathYandexMusicDir);
-            PathDBSqlite = _get_path_db_sqlite(PathYandexMusicDir);
+            PathYandexMusicDir = GetPathYandexMusic();
+            PathMusicSours = GetPathMusicSoursDir(PathYandexMusicDir);
+            PathDBSqlite = GetPathDbSqliteYandex(PathYandexMusicDir);
 
 
         }
 
 
 
-        private string? _get_path_yandex_music()
+        private static string? GetPathYandexMusic()
         {
             string user_dict = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
 
             string path1 = Path.Combine(user_dict, @"AppData\Local\Packages");
             string yandex = "Yandex.Music_";
             string path2 = "LocalState";
-            string? _path_yndex_music = null;
+            string? _path_yandex_music = null;
             foreach (var dir in Directory.GetDirectories(path1))
             {
                 if (dir.Contains(yandex))
                 {
-                    _path_yndex_music = Path.Combine(dir, path2);
+                    _path_yandex_music = Path.Combine(dir, path2);
                     break;
                 }
 
             }
-            if (_path_yndex_music == null)
+            if (_path_yandex_music == null)
                 throw new Exception($"{path1}\\...{yandex}... not found.");
             else
-                return _path_yndex_music;
+                return _path_yandex_music;
         }
 
 
-        private string? _get_path_music_sours_dir(string? path)
+        private static string? GetPathMusicSoursDir(string? path)
         {
             string music = "Music";
             string? path_music_files = null;
@@ -81,7 +81,7 @@ namespace AudioFilesWorkC_
             return path_music_files;
         }
 
-        private string? _get_path_db_sqlite(string? path)
+        private static string? GetPathDbSqliteYandex(string? path)
         {
             string? path_db = null;
             if (path != null)
@@ -104,9 +104,9 @@ namespace AudioFilesWorkC_
 
         }
 
-        public string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
+        public static string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
 
-        public FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
+        public static FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
         {
             if (Path.Exists(destination)!) throw new ArgumentException($"Path:{destination} - There is no such way.");
             string _sours = Path.Combine(sours!, track.TrackId + ".mp3");
@@ -133,7 +133,28 @@ namespace AudioFilesWorkC_
 
         }
 
+        public static string GetPathDbSqliteDestination()
+        {
+            if (Path.Exists(PathCopyTo))
+            {
+                string _sours_db = Path.Combine(PathCopyTo, DbSqlite.NameMyDB);
+                if (Path.Exists(_sours_db))
+                    return _sours_db;
+                else
+                {
+                    string _str_connection = DbSqlite.Get_str_connection(_sours_db);
+                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.queries["str_create"]);
+                    return _sours_db;
+                }
+
+            }
+            else
+            {
+                throw new ArgumentException($"{PathCopyTo} - There is not such way");
+            }
 
 
+
+        }
     }
 }

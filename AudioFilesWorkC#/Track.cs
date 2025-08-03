@@ -10,15 +10,9 @@ namespace AudioFilesWorkC_
     {
         public string Name { get; set; } = "unknow";
         public string? Artist { get; set; }
-        //public string? Album { get; set; }
-        //public int? DurationMillis { get; set; }
         public string? TrackId { get; set; }
-        //public int? FileSize { get; set; }
         public string? ArtistId { get; set; }
-
         public string? NameArtist {  get; set; }
-
-
 
         public Track() { }
 
