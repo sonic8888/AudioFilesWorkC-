@@ -12,7 +12,10 @@ namespace AudioFilesWorkC_
         public string? Artist { get; set; }
         public string? TrackId { get; set; }
         public string? ArtistId { get; set; }
-        public string? NameArtist {  get; set; }
+        public string? NameArtist 
+        {
+            get { return $"{Name} ({Artist})"; }
+        }
 
         public Track() { }
 

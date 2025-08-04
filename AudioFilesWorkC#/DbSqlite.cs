@@ -17,7 +17,8 @@ namespace AudioFilesWorkC_
             {"str3", "SELECT Title FROM T_Track WHERE Id = @value" },
             {"str4", "SELECT ArtistId FROM T_TrackArtist WHERE TrackId = @value" },
             {"str5", "SELECT Name FROM T_Artist WHERE Id = @value" },
-            {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Name  VARCHAR, Artist  VARCHAR, TrackId  VARCHAR, ArtistId  VARCHAR, NameArtist   VARCHAR);" }
+            {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Name  VARCHAR, Artist  VARCHAR, TrackId  VARCHAR, ArtistId  VARCHAR, NameArtist   VARCHAR, Data  VARCHAR );" },
+            {"str_insert","INSERT INTO T_Trask_Yandex (Name, Artist, TrackId, ArtistId, NameArtist, Data)  VALUES (@name, @artist, @trackid, @artistid, @nameartist, @data)" }
         };
 
         public static string NameMyDB = "my_music.sqlite";
@@ -61,7 +62,7 @@ namespace AudioFilesWorkC_
 
         }
 
-        public static SqliteParameter Get_sql_params(string name, string value)
+        public static SqliteParameter Get_sql_params(string name, string? value)
         {
 
             SqliteParameter par = new SqliteParameter(name, value);
@@ -69,7 +70,7 @@ namespace AudioFilesWorkC_
 
         }
 
-        public static List<SqliteParameter> Get_list_params(Dictionary<string, string> param_val)
+        public static List<SqliteParameter> Get_list_params(Dictionary<string, string?> param_val)
         {
             List<SqliteParameter> sqliteParameters = new List<SqliteParameter>();
             foreach (var item in param_val)

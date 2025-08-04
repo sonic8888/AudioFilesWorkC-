@@ -18,12 +18,15 @@ namespace AudioFilesWorkC_
         public static string? PathDBSqlite { get; private set; }
 
         public static string PathCopyTo { get; set; } = "";
-        public YandexMusic()
+
+        public static string Data {  get; private set; }
+        static YandexMusic()
         {
 
             PathYandexMusicDir = GetPathYandexMusic();
             PathMusicSours = GetPathMusicSoursDir(PathYandexMusicDir);
             PathDBSqlite = GetPathDbSqliteYandex(PathYandexMusicDir);
+            Data = DateTime.Now.ToString("d");
 
 
         }

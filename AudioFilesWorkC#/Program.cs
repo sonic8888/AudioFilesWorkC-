@@ -1,23 +1,19 @@
 ﻿using Microsoft.Data.Sqlite;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace AudioFilesWorkC_
 {
     internal class Program
     {
+        static string PathDestination = @"D:\test";
         static void Main(string[] args)
         {
             Track[]? tracks = GetDataFromYandexDB();
             if (tracks != null)
             {
-                foreach (Track item in tracks)
-                {
-                    Console.WriteLine($"TrackId:{item.TrackId}, Name:{item.Name}, ArtistId:{item.ArtistId}, Artist:{item.Artist}");
-                }
-
-
-
+                InsertData(PathDestination, tracks);
             }
         }
 
@@ -26,10 +22,10 @@ namespace AudioFilesWorkC_
             Track[]? tracks = null;
             try
             {
-                YandexMusic yandexMusic = new();
+
                 string? sours_db = YandexMusic.PathDBSqlite;
                 string sql_conn = DbSqlite.Get_str_connection(sours_db);
-                List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string> { { "value", "5" } });
+                List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
                 object? res = DbSqlite.ExecuteScalar(sql_conn, DbSqlite.queries["str1"], com_params);
 
                 if (res != null)
@@ -44,10 +40,10 @@ namespace AudioFilesWorkC_
                     foreach (var item in tracks)
                     {
 
-                        List<SqliteParameter> lp_title = DbSqlite.Get_list_params(new Dictionary<string, string> { { "value", item.TrackId! } });
+                        List<SqliteParameter> lp_title = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.TrackId! } });
                         DbSqlite.ExecuteReader(sql_conn, DbSqlite.queries["str3"], ("Name", "GetString"), item, lp_title);
                         DbSqlite.ExecuteReader(sql_conn, DbSqlite.queries["str4"], ("ArtistId", "GetString"), item, lp_title);
-                        List<SqliteParameter> lp_artist = DbSqlite.Get_list_params(new Dictionary<string, string> { { "value", item.ArtistId! } });
+                        List<SqliteParameter> lp_artist = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.ArtistId! } });
                         DbSqlite.ExecuteReader(sql_conn, DbSqlite.queries["str5"], ("Artist", "GetString"), item, lp_artist);
 
                     }
@@ -62,6 +58,27 @@ namespace AudioFilesWorkC_
                 Environment.Exit(1);
             }
             return tracks;
+        }
+
+
+        static void InsertData(string pathDir, Track[] tracks)
+        {
+            YandexMusic.PathCopyTo = pathDir;
+            string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
+            foreach (Track item in tracks)
+            {
+                var dicParam = new Dictionary<string, string?>();
+                dicParam.Add("@name", item.Name);
+                dicParam.Add("@artist", item.Artist);
+                dicParam.Add("@trackid", item.TrackId);
+                dicParam.Add("@artistid", item.ArtistId);
+                dicParam.Add("@nameartist", item.NameArtist);
+                dicParam.Add("@data", YandexMusic.Data);
+                var comParams = DbSqlite.Get_list_params(dicParam);
+                DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination), DbSqlite.queries["str_insert"], comParams);
+
+            }
+
         }
 
 
