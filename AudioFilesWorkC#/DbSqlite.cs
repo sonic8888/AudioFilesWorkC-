@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,8 @@ namespace AudioFilesWorkC_
             {"str3", "SELECT Title FROM T_Track WHERE Id = @value" },
             {"str4", "SELECT ArtistId FROM T_TrackArtist WHERE TrackId = @value" },
             {"str5", "SELECT Name FROM T_Artist WHERE Id = @value" },
+            {"str6", "SELECT Count(Name) From T_Trask_Yandex" },
+            {"str7","SELECT * FROM  T_Trask_Yandex " },
             {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Name  VARCHAR, Artist  VARCHAR, TrackId  VARCHAR, ArtistId  VARCHAR, NameArtist   VARCHAR, Data  VARCHAR );" },
             {"str_insert","INSERT INTO T_Trask_Yandex (Name, Artist, TrackId, ArtistId, NameArtist, Data)  VALUES (@name, @artist, @trackid, @artistid, @nameartist, @data)" }
         };
@@ -107,6 +110,58 @@ namespace AudioFilesWorkC_
                             Track track = tracks[n++];
                             var res = method_reader?.Invoke(reader, parameters: new object[] { 0 });
                             property_track?.SetValue(track, res);
+
+
+                        }
+                    }
+                }
+
+            }
+        }
+
+
+
+        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string)[] property_method_array, ref Track[] tracks, List<SqliteParameter>? sql_params = null)
+        {
+            using (var connection = new SqliteConnection(str_connection))
+            {
+                connection.Open();
+                SqliteCommand command = new SqliteCommand(sqlExpression, connection);
+                if (sql_params != null)
+                {
+                    foreach (var item in sql_params)
+                    {
+                        command.Parameters.Add(item);
+                    }
+                }
+                using (SqliteDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.HasRows) // если есть данные
+                    {
+                        int n = 0;
+                        var type_track = typeof(Track);
+                        var type_reader = reader.GetType();
+                        int lenght = property_method_array.Length;
+                        PropertyInfo?[] pi = new PropertyInfo[lenght];
+                        MethodInfo?[] mi = new MethodInfo[lenght];
+                        for (int i = 0; i < lenght; i++)
+                        {
+                            var pr_m = property_method_array[i];
+                            pi[i] = type_track.GetProperty(pr_m.Item1);
+                            mi[i] = type_reader.GetMethod(pr_m.Item2);
+                        }
+                        while (reader.Read())   // построчно считываем данные
+                        {
+                            Track track = tracks[n++];
+                            for (int i = 0; i < lenght; i++)
+                            {
+                                MethodInfo? method = mi[i];
+                                PropertyInfo? property = pi[i];
+                                var res = method?.Invoke(reader, parameters: new object[] { i + 1  });
+                                property?.SetValue(track, res);
+                            }
+
+
 
 
                         }

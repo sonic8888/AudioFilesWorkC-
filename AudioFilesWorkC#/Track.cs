@@ -12,16 +12,19 @@ namespace AudioFilesWorkC_
         public string? Artist { get; set; }
         public string? TrackId { get; set; }
         public string? ArtistId { get; set; }
-        public string? NameArtist 
+        public string? NameArtist
         {
             get { return $"{Name} ({Artist})"; }
         }
+        public string? DataCreate { get; set; }
+
+        public string? Name_Artist { get; set; }
 
         public Track() { }
 
         public override string ToString()
         {
-            return $"{Name} {Artist}";
+            return $"{Name} ({Artist})";
         }
 
         public override bool Equals(object? obj)
@@ -36,6 +39,7 @@ namespace AudioFilesWorkC_
             }
         }
 
+        public static string Data() => DateTime.Now.ToString("d");
         public override int GetHashCode()
         {
             return Name.GetHashCode();

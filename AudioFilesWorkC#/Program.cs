@@ -10,13 +10,26 @@ namespace AudioFilesWorkC_
         static string PathDestination = @"D:\test";
         static void Main(string[] args)
         {
-            Track[]? tracks = GetDataFromYandexDB();
+            YandexMusic.PathCopyTo = PathDestination;
+            //Track[]? tracks = GetDataFromYandexDB();
+            //if (tracks != null)
+            //{
+            //    Track[] short_track = tracks[0..20];
+            //    PrintTrack(short_track);
+
+            //}
+            Track[]? tracks = GetEmtyTrackFromDB();
             if (tracks != null)
             {
-                InsertData(PathDestination, tracks);
+                string sours_dir = YandexMusic.GetPathDbSqliteDestination();
+                string str_connection = DbSqlite.Get_str_connection(sours_dir);
+                (string, string)[] pr_meth = new (string, string)[] { ("Name", "GetString"), ("Artist", "GetString"), ("TrackId", "GetString"), ("ArtistId", "GetString"), ("Name_Artist", "GetString"), ("DataCreate", "GetString") };
+                DbSqlite.ExecuteReader(str_connection, DbSqlite.queries["str7"], pr_meth, ref tracks);
+                PrintTrack(tracks);
+
+                //}
             }
         }
-
         static Track[]? GetDataFromYandexDB()
         {
             Track[]? tracks = null;
@@ -61,9 +74,38 @@ namespace AudioFilesWorkC_
         }
 
 
-        static void InsertData(string pathDir, Track[] tracks)
+        static Track[]? GetEmtyTrackFromDB()
         {
-            YandexMusic.PathCopyTo = pathDir;
+            Track[]? tracks = null;
+            try
+            {
+                string sours_dir = YandexMusic.GetPathDbSqliteDestination();
+                string str_connection = DbSqlite.Get_str_connection(sours_dir);
+                object? res = DbSqlite.ExecuteScalar(str_connection, DbSqlite.queries["str6"]);
+                if (res != null)
+                {
+                    int result = Convert.ToInt32(res);
+                    tracks = new Track[result];
+                    for (int i = 0; i < tracks.Length; i++)
+                    {
+                        tracks[i] = new Track();
+                    }
+
+                }
+            }
+
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+                Environment.Exit(1);
+            }
+            return tracks;
+        }
+
+        static void InsertData(Track[] tracks)
+        {
+
             string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
             foreach (Track item in tracks)
             {
@@ -81,7 +123,18 @@ namespace AudioFilesWorkC_
 
         }
 
+        static void PrintTrack(Track[] t)
+        {
+
+            foreach (Track item in t)
+            {
+                Console.WriteLine(item);
+
+            }
+        }
+
 
     }
 }
+
 
