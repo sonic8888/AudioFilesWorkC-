@@ -8,7 +8,7 @@ namespace AudioFilesWorkC_
 {
     internal class Track
     {
-        public string Name { get; set; } = "unknow";
+        public string Name { get; set; } = "unknown";
         public string? Artist { get; set; }
         public string? TrackId { get; set; }
         public string? ArtistId { get; set; }
