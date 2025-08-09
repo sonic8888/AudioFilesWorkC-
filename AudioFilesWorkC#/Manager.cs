@@ -11,10 +11,19 @@ namespace AudioFilesWorkC_
 {
     internal static class Manager
     {
+        /// <summary>
+        /// Путь к папке в которой находятся а-файлы и БД.
+        /// </summary>
         public static string? pathDestination = @"D:\test";
+        /// <summary>
+        /// Выбор действия
+        /// </summary>
         static string? action = "";
 
 
+        /// <summary>
+        /// Выбор действия работы с аудиофайлами.
+        /// </summary>
         public static void PrintMessage()
         {
             Console.WriteLine("Программа работы  с аудиофайлами Яндекс Музыка");
@@ -101,7 +110,12 @@ namespace AudioFilesWorkC_
             return tracks;
         }
 
-        public static Track[] GetSequenceUniqueTrack()
+        /// <summary>
+        /// Возвращает массив треков - разницу корневой папки Яндекс Музыка 
+        /// и другой папки (pathDestination).
+        /// </summary>
+        /// <returns>Track[]</returns>
+        public static Track[] GetDifferenceYandexAndDestination()
         {
             Track[] tracksY = GetDataFromYandexDB();
             Track[] trackD = GetDataFromPathDestination();
@@ -168,6 +182,10 @@ namespace AudioFilesWorkC_
         }
 
 
+        /// <summary>
+        /// Извлекает данные из БД и упаковывает их в массив 'Track'.
+        /// </summary>
+        /// <returns>Track[]</returns>
         public static Track[] GetDataFromPathDestination()
         {
             Track[] tracks = GetEmptyTrackFromDB();
@@ -181,6 +199,10 @@ namespace AudioFilesWorkC_
             return tracks!;
         }
 
+        /// <summary>
+        /// Выводит на консоль последовательность.
+        /// </summary>
+        /// <param name="t">последовательнось</param>
         public static void Display(IEnumerable t)
         {
 
