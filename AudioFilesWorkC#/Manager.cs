@@ -212,5 +212,18 @@ namespace AudioFilesWorkC_
 
             }
         }
+
+        /// <summary>
+        /// Копирует недостающие треки из корневой папки Яндекс Музыка в папку назначения.
+        /// </summary>
+        public static void CopyFromYandexMusic()
+        {
+            Track[] tracks = GetDifferenceYandexAndDestination();
+            foreach (var item in tracks)
+            {
+                YandexMusic.CopyTo(item, YandexMusic.PathYandexMusicDir, YandexMusic.PathCopyTo);
+                Console.WriteLine("Вносим в БД");
+            }
+        }
     }
 }

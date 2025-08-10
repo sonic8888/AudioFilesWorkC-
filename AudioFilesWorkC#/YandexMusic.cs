@@ -10,15 +10,30 @@ namespace AudioFilesWorkC_
 {
     internal class YandexMusic
     {
+        /// <summary>
+        /// PathYandexMusicDir указывает путь к папке Яндекс Музыка.
+        /// </summary>
         public static string? PathYandexMusicDir
         {
             get; private set;
         }
+        /// <summary>
+        /// PathMusicSours указывает путь к папке с треками приложения Яндекс Музыка.
+        /// </summary>
         public static string? PathMusicSours { get; private set; }
+        /// <summary>
+        /// PathDBSqlite путь к БД Яндекс Музыка.
+        /// </summary>
         public static string? PathDBSqlite { get; private set; }
 
+        /// <summary>
+        /// PathCopyTo путь к папке куда копируются треки.
+        /// </summary>
         public static string PathCopyTo { get; set; } = "";
 
+        /// <summary>
+        /// Data сегодняшняя дата.
+        /// </summary>
         public static string Data {  get; private set; }
         static YandexMusic()
         {
@@ -33,6 +48,11 @@ namespace AudioFilesWorkC_
 
 
 
+        /// <summary>
+        /// Возвращает путь к корневой папке Яндекс Музыка.
+        /// </summary>
+        /// <returns>путь к папке</returns>
+        /// <exception cref="Exception"></exception>
         private static string? GetPathYandexMusic()
         {
             string user_dict = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
@@ -57,6 +77,12 @@ namespace AudioFilesWorkC_
         }
 
 
+        /// <summary>
+        /// Находит путь к папке с треками приложения Яндекс Музыка.
+        /// </summary>
+        /// <param name="path">Путь к корневой папке Яндекс Музыка</param>
+        /// <returns>Путь к папке с треками</returns>
+        /// <exception cref="Exception">Если путь не найден.</exception>
         private static string? GetPathMusicSoursDir(string? path)
         {
             string music = "Music";
@@ -84,6 +110,12 @@ namespace AudioFilesWorkC_
             return path_music_files;
         }
 
+        /// <summary>
+        /// Находит путь к БД Яндекс Музыка.
+        /// </summary>
+        /// <param name="path">Путь к корневой папке Яндекс Музыка</param>
+        /// <returns> Путь к БД</returns>
+        /// <exception cref="Exception">Если БД не нашли.</exception>
         private static string? GetPathDbSqliteYandex(string? path)
         {
             string? path_db = null;
@@ -107,8 +139,23 @@ namespace AudioFilesWorkC_
 
         }
 
+        /// <summary>
+        /// Комбинирует имя трека и имя артиста.  
+        /// </summary>
+        /// <param name="track">класс Track</param>
+        /// <returns>имя трека + (артист)</returns>
         public static string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
 
+        /// <summary>
+        /// Копирует трек из папки источника в папку назначения.
+        /// </summary>
+        /// <param name="track">класс Track</param>
+        /// <param name="sours">папка источник</param>
+        /// <param name="destination">папка назначение</param>
+        /// <param name="isRename">изменяем имя трека или нет</param>
+        /// <returns>FileInfo скопированного трека</returns>
+        /// <exception cref="ArgumentException">если не нашел папку назначения</exception>
+        /// <exception cref="Exception">ошибка при копировании</exception>
         public static FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
         {
             if (Path.Exists(destination)!) throw new ArgumentException($"Path:{destination} - There is no such way.");
@@ -136,6 +183,11 @@ namespace AudioFilesWorkC_
 
         }
 
+        /// <summary>
+        /// Находит путь к БД папки назначения, если нет то создает БД.
+        /// </summary>
+        /// <returns>Путь к БД</returns>
+        /// <exception cref="ArgumentException">Если не нашел папку назначения</exception>
         public static string GetPathDbSqliteDestination()
         {
             if (Path.Exists(PathCopyTo))
