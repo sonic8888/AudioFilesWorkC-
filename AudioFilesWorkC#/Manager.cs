@@ -213,17 +213,33 @@ namespace AudioFilesWorkC_
             }
         }
 
+
         /// <summary>
-        /// Копирует недостающие треки из корневой папки Яндекс Музыка в папку назначения.
+        /// Копирует недостающие треки из папки Яндекс Музыка в папку назначения и заносит данные в БД.
         /// </summary>
-        public static void CopyFromYandexMusic()
+        /// <returns>true если успешно</returns>
+        /// <exception cref="Exception">ошибки при копировании и  при вставке данных в БД</exception>
+        public static bool CopyFromYandexMusic()
         {
-            Track[] tracks = GetDifferenceYandexAndDestination();
-            foreach (var item in tracks)
+            bool isSuccessfully = false;
+            try
             {
-                YandexMusic.CopyTo(item, YandexMusic.PathYandexMusicDir, YandexMusic.PathCopyTo);
-                Console.WriteLine("Вносим в БД");
+                Track[] tracks = GetDifferenceYandexAndDestination();
+
+                foreach (var item in tracks)
+                {
+                    YandexMusic.CopyTo(item, YandexMusic.PathYandexMusicDir, YandexMusic.PathCopyTo);
+                    Console.WriteLine("Вносим в БД");
+                }
+                Manager.InsertData(tracks);
+                isSuccessfully = true;
             }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+            return isSuccessfully;
         }
     }
 }
