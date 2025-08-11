@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -11,9 +12,9 @@ namespace AudioFilesWorkC_
     internal class YandexMusic
     {
         /// <summary>
-        /// PathYandexMusicDir указывает путь к папке Яндекс Музыка.
+        /// PathYandexDir указывает путь к папке корневой Яндекс Музыка.
         /// </summary>
-        public static string? PathYandexMusicDir
+        public static string? PathYandexDir
         {
             get; private set;
         }
@@ -34,14 +35,17 @@ namespace AudioFilesWorkC_
         /// <summary>
         /// Data сегодняшняя дата.
         /// </summary>
-        public static string Data {  get; private set; }
+        public static string Data { get; private set; }
+
+        public static string PathMusicDirYandex {  get; private set; }
         static YandexMusic()
         {
 
-            PathYandexMusicDir = GetPathYandexMusic();
-            PathMusicSours = GetPathMusicSoursDir(PathYandexMusicDir);
-            PathDBSqlite = GetPathDbSqliteYandex(PathYandexMusicDir);
+            PathYandexDir = GetPathYandexMusic();
+            PathMusicSours = GetPathMusicSoursDir(PathYandexDir);
+            PathDBSqlite = GetPathDbSqliteYandex(PathYandexDir);
             Data = DateTime.Now.ToString("d");
+            PathMusicDirYandex = GetPathMusicSoursDir(PathYandexDir);
 
 
         }
@@ -83,29 +87,26 @@ namespace AudioFilesWorkC_
         /// <param name="path">Путь к корневой папке Яндекс Музыка</param>
         /// <returns>Путь к папке с треками</returns>
         /// <exception cref="Exception">Если путь не найден.</exception>
-        private static string? GetPathMusicSoursDir(string? path)
+        private static string GetPathMusicSoursDir(string? path)
         {
             string music = "Music";
-            string? path_music_files = null;
+            string path_music_files ="";
             if (path != null)
-                foreach (var dir in Directory.GetDirectories(path))
-                {
-                    if (dir.Contains(music))
-                    {
-                        foreach (var d in Directory.GetDirectories(dir))
-                        {
-                            foreach (var file in Directory.GetFiles(d))
-                            {
-                                if (new FileInfo(file).Extension.ToLower() == ".mp3")
-                                    path_music_files = d; break;
-                            }
-                        }
-                    }
-
-                }
-            if (path_music_files == null)
             {
-                throw new Exception($"{path}\\{music}\\..?  not found.");
+                path_music_files = Path.Combine(path, music);
+                var files = Directory.GetFiles(path);
+                foreach (var file in files)
+                {
+                    if (file.EndsWith(".sqlite"))
+                    { 
+                        FileInfo fileDB = new FileInfo(file);
+                        string name = fileDB.Name;
+                        name = name[..^7];
+                        name = name.Substring(8);
+                        path_music_files = Path.Combine(path_music_files, name);
+                    }
+                }
+
             }
             return path_music_files;
         }
@@ -146,19 +147,58 @@ namespace AudioFilesWorkC_
         /// <returns>имя трека + (артист)</returns>
         public static string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
 
+        ///// <summary>
+        ///// Копирует трек из папки источника в папку назначения.
+        ///// </summary>
+        ///// <param name="track">класс Track</param>
+        ///// <param name="sours">папка источник</param>
+        ///// <param name="destination">папка назначение</param>
+        ///// <param name="isRename">изменяем имя трека или нет</param>
+        ///// <returns>FileInfo скопированного трека</returns>
+        ///// <exception cref="ArgumentException">если не нашел папку назначения</exception>
+        ///// <exception cref="Exception">ошибка при копировании</exception>
+        //public static FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
+        //{
+        //    if (Path.Exists(destination)!) throw new ArgumentException($"Path:{destination} - There is no such way.");
+        //    string _sours = Path.Combine(sours!, track.TrackId + ".mp3");
+        //    string _destination = "";
+        //    if (isRename)
+        //        _destination = Path.Combine(destination, GetName(track));
+        //    else
+        //        _destination = Path.Combine(destination, track.TrackId + ".mp3");
+        //    FileInfo file = new FileInfo(_sours);
+
+        //    try
+        //    {
+        //        if (file.Exists)
+        //        { file = file.CopyTo(_destination, true); }
+        //        else
+        //            throw new ArgumentException($"Path:{_destination} - there is no such file");
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        throw new Exception(ex.Message);
+        //    }
+        //    return file;
+
+        //}
+
         /// <summary>
         /// Копирует трек из папки источника в папку назначения.
         /// </summary>
-        /// <param name="track">класс Track</param>
+        /// <param name="track">AudioFilesWorkC_.Track</param>
         /// <param name="sours">папка источник</param>
         /// <param name="destination">папка назначение</param>
+        /// <param name="isException">false если было исключение</param>
         /// <param name="isRename">изменяем имя трека или нет</param>
-        /// <returns>FileInfo скопированного трека</returns>
-        /// <exception cref="ArgumentException">если не нашел папку назначения</exception>
-        /// <exception cref="Exception">ошибка при копировании</exception>
-        public static FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
+        /// <param name="isOverwrite">true если файл надо перезаписывать</param>
+        /// <returns>System.IO.FileInfo скопированного трека</returns>
+        /// <exception cref="ArgumentException">если путь к папке назначения не существует</exception>
+        public static FileInfo CopyTo(Track track, string? sours, string destination, out bool isException, bool isRename = true, bool isOverwrite = true)
         {
-            if (Path.Exists(destination)!) throw new ArgumentException($"Path:{destination} - There is no such way.");
+            isException = true;
+            if (!Path.Exists(destination)) throw new ArgumentException($"Path:{destination} - There is no such way.");
             string _sours = Path.Combine(sours!, track.TrackId + ".mp3");
             string _destination = "";
             if (isRename)
@@ -170,14 +210,20 @@ namespace AudioFilesWorkC_
             try
             {
                 if (file.Exists)
-                { file = file.CopyTo(_destination, true); }
+                { file = file.CopyTo(_destination, isOverwrite); }
                 else
                     throw new ArgumentException($"Path:{_destination} - there is no such file");
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("Трек уже существует. Не перезаписываем его.");
+                isException = false;
             }
             catch (Exception ex)
             {
 
-                throw new Exception(ex.Message);
+                Console.WriteLine(ex.Message); ;
+                isException = false;
             }
             return file;
 

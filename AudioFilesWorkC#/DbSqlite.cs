@@ -24,6 +24,7 @@ namespace AudioFilesWorkC_
             {"str_insert","INSERT INTO T_Trask_Yandex (Name, Artist, TrackId, ArtistId, NameArtist, Data)  VALUES (@name, @artist, @trackid, @artistid, @nameartist, @data)" }
         };
 
+
         public static string NameMyDB = "my_music.sqlite";
         public static string Get_str_connection(string? data_sours, string mode = "ReadWriteCreate", Dictionary<string, string>? params_com = null)
         {
@@ -157,7 +158,7 @@ namespace AudioFilesWorkC_
                             {
                                 MethodInfo? method = mi[i];
                                 PropertyInfo? property = pi[i];
-                                var res = method?.Invoke(reader, parameters: new object[] { i + 1  });
+                                var res = method?.Invoke(reader, parameters: new object[] { i + 1 });
                                 property?.SetValue(track, res);
                             }
 
@@ -205,8 +206,9 @@ namespace AudioFilesWorkC_
             }
         }
 
-        public static void ExecuteNonQuery(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
+        public static int ExecuteNonQuery(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
         {
+            int rows = -1;
             using (var connection = new SqliteConnection(str_connection))
             {
                 connection.Open();
@@ -218,8 +220,9 @@ namespace AudioFilesWorkC_
                         command.Parameters.Add(item);
                     }
                 }
-                command.ExecuteNonQuery();
+                rows = command.ExecuteNonQuery();
             }
+            return rows;
         }
     }
 }

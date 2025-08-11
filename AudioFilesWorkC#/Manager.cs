@@ -158,7 +158,7 @@ namespace AudioFilesWorkC_
         }
 
         /// <summary>
-        /// вставляем в БД "NameMyDB" данные из "Track"
+        /// вставляем в БД "NameMyDB" данные из  массива Track
         /// </summary>
         /// <param name="tracks">содержит данные о треке</param>
         public static void InsertData(Track[] tracks)
@@ -179,6 +179,26 @@ namespace AudioFilesWorkC_
 
             }
 
+        }
+
+        /// <summary>
+        /// Записываем данные из Track в БД(NameMyDB).
+        /// </summary>
+        /// <param name="track">Track</param>
+        /// <param name="pathDbDestination">путь к папке назначения</param>
+        /// <returns>номер строки в БД</returns>
+        public static int InsertData(Track track, string pathDbDestination)
+        {
+            var dicParam = new Dictionary<string, string?>();
+            dicParam.Add("@name", track.Name);
+            dicParam.Add("@artist", track.Artist);
+            dicParam.Add("@trackid", track.TrackId);
+            dicParam.Add("@artistid", track.ArtistId);
+            dicParam.Add("@nameartist", track.NameArtist);
+            dicParam.Add("@data", YandexMusic.Data);
+            var comParams = DbSqlite.Get_list_params(dicParam);
+            int rows = DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination), DbSqlite.queries["str_insert"], comParams);
+            return rows;
         }
 
 
@@ -222,16 +242,23 @@ namespace AudioFilesWorkC_
         public static bool CopyFromYandexMusic()
         {
             bool isSuccessfully = false;
+            string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
+            Track[] tracks = GetDifferenceYandexAndDestination();
+
             try
             {
-                Track[] tracks = GetDifferenceYandexAndDestination();
-
+                int i = 0;
                 foreach (var item in tracks)
                 {
-                    YandexMusic.CopyTo(item, YandexMusic.PathYandexMusicDir, YandexMusic.PathCopyTo);
-                    Console.WriteLine("Вносим в БД");
+                    bool isException;
+                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
+                    if (isException)
+                    {
+                        Manager.InsertData(item, pathDbDestination);
+                        //DisplayPercent(++i, tracks.Length);
+                    }
                 }
-                Manager.InsertData(tracks);
+                Console.Clear();
                 isSuccessfully = true;
             }
             catch (Exception ex)
@@ -240,6 +267,23 @@ namespace AudioFilesWorkC_
                 throw new Exception(ex.Message);
             }
             return isSuccessfully;
+        }
+
+        static void DisplayPercent(int count, int length)
+        {
+            if (length != 0)
+            {
+                double five = 5;
+                double percent = (count * 100) / length;
+                percent = Math.Round(percent);
+                if (percent % five == 0)
+                {
+                    Console.Clear();
+                    Console.Write(percent);
+                }
+
+            }
+
         }
     }
 }
