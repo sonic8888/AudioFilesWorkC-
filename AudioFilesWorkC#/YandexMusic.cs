@@ -216,7 +216,7 @@ namespace AudioFilesWorkC_
             }
             catch (IOException)
             {
-                Console.WriteLine("Трек уже существует. Не перезаписываем его.");
+                Console.WriteLine($"Трек '{file.Name}' уже существует. Не перезаписываем его.");
                 isException = false;
             }
             catch (Exception ex)
