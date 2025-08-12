@@ -37,7 +37,7 @@ namespace AudioFilesWorkC_
         /// </summary>
         public static string Data { get; private set; }
 
-        public static string PathMusicDirYandex {  get; private set; }
+        public static string PathMusicDirYandex { get; private set; }
         static YandexMusic()
         {
 
@@ -90,7 +90,7 @@ namespace AudioFilesWorkC_
         private static string GetPathMusicSoursDir(string? path)
         {
             string music = "Music";
-            string path_music_files ="";
+            string path_music_files = "";
             if (path != null)
             {
                 path_music_files = Path.Combine(path, music);
@@ -98,7 +98,7 @@ namespace AudioFilesWorkC_
                 foreach (var file in files)
                 {
                     if (file.EndsWith(".sqlite"))
-                    { 
+                    {
                         FileInfo fileDB = new FileInfo(file);
                         string name = fileDB.Name;
                         name = name[..^7];
@@ -216,7 +216,7 @@ namespace AudioFilesWorkC_
             }
             catch (IOException)
             {
-                Console.WriteLine($"Трек '{file.Name}' уже существует. Не перезаписываем его.");
+                Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Red);
                 isException = false;
             }
             catch (Exception ex)

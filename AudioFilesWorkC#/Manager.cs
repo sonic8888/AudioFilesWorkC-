@@ -255,7 +255,8 @@ namespace AudioFilesWorkC_
                     if (isException)
                     {
                         Manager.InsertData(item, pathDbDestination);
-                        //DisplayPercent(++i, tracks.Length);
+                        Manager.DisplayTrack(item);
+
                     }
                 }
                 Console.Clear();
@@ -285,5 +286,13 @@ namespace AudioFilesWorkC_
             }
 
         }
+
+        public static void DisplayColor(string message, System.ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void DisplayTrack(Track track) => Console.WriteLine(track);
     }
 }
