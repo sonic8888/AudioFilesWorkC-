@@ -10,9 +10,9 @@ namespace AudioFilesWorkC_
         static void Main(string[] args)
         {
             YandexMusic.PathCopyTo = Manager.pathDestination!;
-            //Manager.CopyFromYandexMusic();
+            Manager.CopyFromYandexMusic();
 
-            Manager.CheckDirDestination();
+            //Manager.CheckDirDestination();
 
 
         }

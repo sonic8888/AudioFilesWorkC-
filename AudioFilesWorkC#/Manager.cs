@@ -120,18 +120,17 @@ namespace AudioFilesWorkC_
         {
             Track[] tracksY = GetDataFromYandexDB();
             Track[] trackD = GetDataFromPathDestination();
-            foreach (Track track in tracksY)
+            List<Track> tracksYY = new List<Track>(tracksY);
+            List<Track> tracksDD = new List<Track>(trackD);
+            tracksYY.Sort();
+            tracksDD.Sort();
+            foreach (var item in tracksDD)
             {
-                Manager.NormalizeNameTrack(track);
+                if (tracksYY.Contains(item))
+                    tracksYY.Remove(item);
             }
-            //foreach (Track track in trackD)
-            //{
-            //    Manager.NormalizeNameTrack(track);
-            //}
-
-            var res = tracksY.Except(trackD);
-            Track[] result = res.ToArray();
-            return result;
+            tracksYY.Sort();
+            return tracksYY.ToArray();
         }
 
         /// <summary>
@@ -267,18 +266,19 @@ namespace AudioFilesWorkC_
 
             try
             {
+                int n = 0;
                 foreach (var item in tracks)
                 {
                     bool isException;
-                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, true);
+                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
                     if (isException)
                     {
                         Manager.InsertData(item, pathDbDestination);
-                        Manager.DisplayTrack(item);
+                        Manager.DisplayTrack(item, ++n);
 
                     }
                 }
-                Console.Clear();
+
                 isSuccessfully = true;
             }
             catch (Exception ex)
@@ -312,7 +312,7 @@ namespace AudioFilesWorkC_
             Console.WriteLine(message);
             Console.ResetColor();
         }
-        public static void DisplayTrack(Track track) => Console.WriteLine(track);
+        public static void DisplayTrack(Track track, int n) => Console.WriteLine(n + ". " + track);
 
         public static string NormalizeName(string? name)
         {

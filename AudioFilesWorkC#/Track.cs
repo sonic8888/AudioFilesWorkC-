@@ -2,14 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AudioFilesWorkC_
 {
-    internal class Track
+    internal class Track:IComparable
     {
-        public string Name { get; set; } = "unknown";
-        public string? Artist { get; set; }
+        private string name = "unknown";
+        private string? artist = null;
+        public string Name
+        {
+            get { return name; }
+            set { name = Track.NormalizeName(value); }
+        }
+        public string? Artist
+        {
+            get { return artist; }
+            set { artist = Track.NormalizeName(value); }
+        }
         public string? TrackId { get; set; }
         public string? ArtistId { get; set; }
         public string? NameArtist
@@ -44,11 +55,20 @@ namespace AudioFilesWorkC_
         {
             return Name.GetHashCode();
         }
+        private static string NormalizeName(string? name)
+        {
+            if (name == null) return "";
+            string pattern = @"\W";
+            string target = ".";
+            Regex regex = new Regex(pattern);
+            string result = regex.Replace(name, target);
+            return result;
+        }
 
-
-
-
-
-
+        public int CompareTo(object? obj)
+        {
+            if (obj is Track track) return Name.CompareTo(track.Name);
+            else throw new ArgumentException("Некорректное значение параметра"); ;
+        }
     }
 }
