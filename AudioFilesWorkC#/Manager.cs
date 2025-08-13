@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -119,6 +120,15 @@ namespace AudioFilesWorkC_
         {
             Track[] tracksY = GetDataFromYandexDB();
             Track[] trackD = GetDataFromPathDestination();
+            foreach (Track track in tracksY)
+            {
+                Manager.NormalizeNameTrack(track);
+            }
+            //foreach (Track track in trackD)
+            //{
+            //    Manager.NormalizeNameTrack(track);
+            //}
+
             var res = tracksY.Except(trackD);
             Track[] result = res.ToArray();
             return result;
@@ -222,7 +232,7 @@ namespace AudioFilesWorkC_
         /// <summary>
         /// Выводит на консоль последовательность.
         /// </summary>
-        /// <param name="t">последовательнось</param>
+        /// <param name="t">IEnumerable</param>
         public static void Display(IEnumerable t)
         {
 
@@ -231,6 +241,16 @@ namespace AudioFilesWorkC_
                 Console.WriteLine(item);
 
             }
+        }
+
+
+        public static void CheckDirDestination()
+        {
+            Track[] trackD = GetDataFromPathDestination();
+            var files = Directory.GetFiles(Manager.pathDestination!);
+            Console.WriteLine(files.Length);
+            var files_mp3 = files.Count(f => f.EndsWith(".mp3"));
+            Console.WriteLine(files_mp3);
         }
 
 
@@ -247,11 +267,10 @@ namespace AudioFilesWorkC_
 
             try
             {
-                int i = 0;
                 foreach (var item in tracks)
                 {
                     bool isException;
-                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
+                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, true);
                     if (isException)
                     {
                         Manager.InsertData(item, pathDbDestination);
@@ -294,5 +313,22 @@ namespace AudioFilesWorkC_
             Console.ResetColor();
         }
         public static void DisplayTrack(Track track) => Console.WriteLine(track);
+
+        public static string NormalizeName(string? name)
+        {
+            if (name == null) return "";
+            string pattern = @"\W";
+            string target = ".";
+            Regex regex = new Regex(pattern);
+            string result = regex.Replace(name, target);
+            return result;
+        }
+
+        public static Track NormalizeNameTrack(Track tr)
+        {
+            tr.Name = NormalizeName(tr.Name);
+            tr.Artist = NormalizeName(tr.Artist);
+            return tr;
+        }
     }
 }

@@ -206,7 +206,7 @@ namespace AudioFilesWorkC_
             else
                 _destination = Path.Combine(destination, track.TrackId + ".mp3");
             FileInfo file = new FileInfo(_sours);
-
+         
             try
             {
                 if (file.Exists)
@@ -216,13 +216,18 @@ namespace AudioFilesWorkC_
             }
             catch (IOException)
             {
-                Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Red);
+                if (isOverwrite)
+                {
+                    Manager.DisplayColor($"Трек '{track}' уже существует. Перезаписываем его.", ConsoleColor.Green);
+                }
+                else { Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Green); }
+
                 isException = false;
             }
             catch (Exception ex)
             {
 
-                Console.WriteLine(ex.Message); ;
+                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
                 isException = false;
             }
             return file;
