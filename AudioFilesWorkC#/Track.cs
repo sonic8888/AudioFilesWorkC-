@@ -10,7 +10,7 @@ namespace AudioFilesWorkC_
     internal class Track:IComparable
     {
         private string name = "unknown";
-        private string? artist = null;
+        private string? artist = "unknown";
         public string Name
         {
             get { return name; }

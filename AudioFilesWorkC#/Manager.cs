@@ -266,7 +266,8 @@ namespace AudioFilesWorkC_
 
             try
             {
-                int n = 0;
+                //int n = 0;
+                var display = Manager.DisplayTrack(new Track());
                 foreach (var item in tracks)
                 {
                     bool isException;
@@ -274,7 +275,8 @@ namespace AudioFilesWorkC_
                     if (isException)
                     {
                         Manager.InsertData(item, pathDbDestination);
-                        Manager.DisplayTrack(item, ++n);
+                        display(item);
+
 
                     }
                 }
@@ -313,6 +315,13 @@ namespace AudioFilesWorkC_
             Console.ResetColor();
         }
         public static void DisplayTrack(Track track, int n) => Console.WriteLine(n + ". " + track);
+
+        public static Action<Track> DisplayTrack(Track track)
+        {
+            int n = 0;
+            void display(Track track) => Console.WriteLine(++n + ". " + track);
+            return display;
+        }
 
         public static string NormalizeName(string? name)
         {
