@@ -25,7 +25,7 @@ namespace AudioFilesWorkC_
         public string? ArtistId { get; set; }
         public string? NameArtist
         {
-            get { return $"{Name} ({Artist})"; }
+            get { return $"{Name}({Artist})"; }
         }
         public string? DataCreate { get; set; }
 

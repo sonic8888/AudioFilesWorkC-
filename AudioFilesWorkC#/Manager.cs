@@ -210,7 +210,6 @@ namespace AudioFilesWorkC_
             return rows;
         }
 
-
         /// <summary>
         /// Извлекает данные из БД и упаковывает их в массив 'Track'.
         /// </summary>
@@ -241,18 +240,41 @@ namespace AudioFilesWorkC_
 
             }
         }
-
-
         public static void CheckDirDestination()
         {
             Track[] trackD = GetDataFromPathDestination();
             var files = Directory.GetFiles(Manager.pathDestination!);
             Console.WriteLine(files.Length);
-            var files_mp3 = files.Count(f => f.EndsWith(".mp3"));
-            Console.WriteLine(files_mp3);
+
+            var trackD_l = trackD.ToList();
+            Console.WriteLine(trackD_l.Count);
+            //var files_info = from f in files where f.EndsWith(".mp3") select new FileInfo(f);
+
+            var files_info = files.Where(f => f.EndsWith(".mp3")).Select(f => new FileInfo(f));
+            Console.WriteLine(files_info.Count());
+            foreach (var file in files_info)
+            {
+                //Console.WriteLine(file.Name);
+                Find(file.Name, trackD_l);
+
+            }
+            void Find(string name_artist, List<Track> track)
+            {
+                var copy = new List<Track>(track) {};
+                foreach (var item in track)
+                {
+                    if (item.NameArtist + ".mp3" == name_artist)
+                    {
+                        track.Remove(item);
+                         
+                    }
+                    //Console.WriteLine(item.NameArtist + ".mp3");
+                    //Console.WriteLine(name_artist);
+                }
+            }
+            //foreach (var item in trackD_l) Console.WriteLine(item.NameArtist);
+
         }
-
-
 
         /// <summary>
         /// Копирует недостающие треки из папки Яндекс Музыка в папку назначения и заносит данные в БД.

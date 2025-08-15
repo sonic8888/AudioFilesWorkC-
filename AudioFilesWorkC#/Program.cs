@@ -11,10 +11,10 @@ namespace AudioFilesWorkC_
         static void Main(string[] args)
         {
             YandexMusic.PathCopyTo = Manager.pathDestination!;
-            Task task = Manager.CopyFromYandexMusic();
-            task.Wait();
+            //Task task = Manager.CopyFromYandexMusic();
+            //task.Wait();
 
-            //Manager.CheckDirDestination();
+            Manager.CheckDirDestination();
 
 
         }
@@ -28,12 +28,7 @@ namespace AudioFilesWorkC_
                 Manager.Display(tracks);
             }
         }
-        //static async Task CopyFiles()
-        //{
-        //    Task task = Manager.CopyFromYandexMusic();
-        //    await task;
 
-        //}
 
 
 

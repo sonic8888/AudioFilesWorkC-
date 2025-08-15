@@ -145,7 +145,7 @@ namespace AudioFilesWorkC_
         /// </summary>
         /// <param name="track">класс Track</param>
         /// <returns>имя трека + (артист)</returns>
-        public static string GetName(Track track) => $"{track.Name}. ({track.Artist}).mp3";
+        public static string GetName(Track track) => $"{track.Name}({track.Artist}).mp3";
 
         ///// <summary>
         ///// Копирует трек из папки источника в папку назначения.
