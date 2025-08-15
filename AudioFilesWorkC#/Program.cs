@@ -11,15 +11,8 @@ namespace AudioFilesWorkC_
         static void Main(string[] args)
         {
             YandexMusic.PathCopyTo = Manager.pathDestination!;
-            try
-            {
-                Task task = Manager.CopyFromYandexMusic();
-                task.Wait();
-            }
-            catch (Exception ex)
-            {
-                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
-            }
+            Task task = Manager.CopyFromYandexMusic();
+            task.Wait();
 
             //Manager.CheckDirDestination();
 

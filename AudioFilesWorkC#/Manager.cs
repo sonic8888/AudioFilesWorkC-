@@ -266,18 +266,28 @@ namespace AudioFilesWorkC_
             {
                 string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
                 Track[] tracks = GetDifferenceYandexAndDestination();
-                var display = Manager.DisplayTrack(new Track());
-                foreach (var item in tracks)
+                try
                 {
-                    bool isException;
-                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
-                    if (isException)
+                    var display = Manager.DisplayTrack(new Track());
+                    foreach (var item in tracks)
                     {
-                        Manager.InsertData(item, pathDbDestination);
-                        display(item);
+                        bool isException;
+                        YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
+                        if (isException)
+                        {
+                            Manager.InsertData(item, pathDbDestination);
+                            display(item);
+
+
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    DisplayColor(ex.Message, ConsoleColor.Red);
+                }
             }
+
             await Task.Run(Copy);
 
         }
