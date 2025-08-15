@@ -253,20 +253,19 @@ namespace AudioFilesWorkC_
         }
 
 
+
         /// <summary>
         /// Копирует недостающие треки из папки Яндекс Музыка в папку назначения и заносит данные в БД.
         /// </summary>
-        /// <returns>true если успешно</returns>
-        /// <exception cref="Exception">ошибки при копировании и  при вставке данных в БД</exception>
-        public static bool CopyFromYandexMusic()
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        async public static Task CopyFromYandexMusic()
         {
-            bool isSuccessfully = false;
-            string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
-            Track[] tracks = GetDifferenceYandexAndDestination();
 
-            try
+            static void Copy()
             {
-                //int n = 0;
+                string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
+                Track[] tracks = GetDifferenceYandexAndDestination();
                 var display = Manager.DisplayTrack(new Track());
                 foreach (var item in tracks)
                 {
@@ -276,19 +275,11 @@ namespace AudioFilesWorkC_
                     {
                         Manager.InsertData(item, pathDbDestination);
                         display(item);
-
-
                     }
                 }
-
-                isSuccessfully = true;
             }
-            catch (Exception ex)
-            {
+            await Task.Run(Copy);
 
-                throw new Exception(ex.Message);
-            }
-            return isSuccessfully;
         }
 
         static void DisplayPercent(int count, int length)
