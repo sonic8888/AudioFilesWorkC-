@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AudioFilesWorkC_
 {
-    internal class Track:IComparable
+    internal class Track : IComparable
     {
         private string name = "unknown";
         private string? artist = "unknown";
@@ -32,7 +32,14 @@ namespace AudioFilesWorkC_
         public string? Name_Artist { get; set; }
 
         public Track() { }
-
+        public Track(string name)
+        {
+            Name = name;
+        }
+        public Track(string name, string? artist) : this(name)
+        {
+            Artist = artist;
+        }
         public override string ToString()
         {
             return $"{Name} ({Artist})";

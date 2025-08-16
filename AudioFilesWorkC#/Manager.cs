@@ -242,37 +242,19 @@ namespace AudioFilesWorkC_
         }
         public static void CheckDirDestination()
         {
-            Track[] trackD = GetDataFromPathDestination();
+            Track[] trackDB = GetDataFromPathDestination();
             var files = Directory.GetFiles(Manager.pathDestination!);
-            Console.WriteLine(files.Length);
-
-            var trackD_l = trackD.ToList();
-            Console.WriteLine(trackD_l.Count);
-            //var files_info = from f in files where f.EndsWith(".mp3") select new FileInfo(f);
-
             var files_info = files.Where(f => f.EndsWith(".mp3")).Select(f => new FileInfo(f));
-            Console.WriteLine(files_info.Count());
-            foreach (var file in files_info)
-            {
-                //Console.WriteLine(file.Name);
-                Find(file.Name, trackD_l);
-
-            }
-            void Find(string name_artist, List<Track> track)
-            {
-                var copy = new List<Track>(track) {};
-                foreach (var item in track)
-                {
-                    if (item.NameArtist + ".mp3" == name_artist)
-                    {
-                        track.Remove(item);
-                         
-                    }
-                    //Console.WriteLine(item.NameArtist + ".mp3");
-                    //Console.WriteLine(name_artist);
-                }
-            }
-            //foreach (var item in trackD_l) Console.WriteLine(item.NameArtist);
+            Track[] trackDir = CreateTrackArray(files_info);
+            var f = trackDir.Except(trackDB);// if f > 0 add in DB or DELETE from DIR
+            var d = trackDB.Except(trackDir);//if d > 0 add in DIR or DELETE from DB
+            DisplayTracks(d);
+            //var prop = GetProperty(trackD, "NameArtist");
+            //Console.WriteLine($"DB:{prop.Count}");
+            //Console.WriteLine($"DIR:{files_info.Count}");
+            //var not_DB = files_info.Where(f=>!prop.Contains(f.Name)).ToList();
+            //var f = files_info.Except(copy_files);
+            //Console.WriteLine(f.Count());
 
         }
 
@@ -331,7 +313,7 @@ namespace AudioFilesWorkC_
 
         }
 
-        public static void DisplayColor(string message, System.ConsoleColor color)
+        public static void DisplayColor(string message, System.ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
@@ -344,6 +326,14 @@ namespace AudioFilesWorkC_
             int n = 0;
             void display(Track track) => Console.WriteLine(++n + ". " + track);
             return display;
+        }
+        public static void DisplayTracks(IEnumerable<Track>track)
+        {
+            int n = 0;
+            foreach (var item in track)
+            {
+                Console.WriteLine($"{++n} {item}");
+            }
         }
 
         public static string NormalizeName(string? name)
@@ -361,6 +351,55 @@ namespace AudioFilesWorkC_
             tr.Name = NormalizeName(tr.Name);
             tr.Artist = NormalizeName(tr.Artist);
             return tr;
+        }
+
+        private static List<string> GetProperty(Track[] track, string namePropery, string extension = ".mp3", bool isAddExtension = true)
+        {
+            Type track_type = typeof(Track);
+            var property = track_type.GetProperty(namePropery);
+            if (property == null) throw new ArgumentNullException(nameof(property));
+            var propertys = new List<string>();
+            foreach (var item in track)
+            {
+                var value = property.GetValue(item);
+                if (value == null) continue;
+                string value_property = "";
+                if (isAddExtension)
+                {
+                    value_property = value.ToString()! + extension;
+                }
+                else
+                {
+                    value_property = value.ToString()!;
+                }
+                propertys.Add(value_property);
+            }
+            return propertys;
+        }
+        private static Track[] CreateTrackArray(IEnumerable<FileInfo> files)
+        {
+            var tracks = new Track[files.Count()];
+            string pattern = @"\w+?.*?\(\w*.*\)";
+            int i = 0;
+            foreach (var file in files)
+            {
+                string name = file.Name;
+                string extension = file.Extension;
+                name = name.TrimEnd(extension.ToArray());
+                if (Regex.IsMatch(name, pattern))
+                {
+                    int index = name.IndexOf('(');
+                    string n = name.Substring(0, index);
+                    string a = name.Substring(index + 1).Trim(')');
+                    tracks[i++] = new Track(n, a);
+
+                }
+                else
+                {
+                    tracks[i++] = new Track(name);
+                }
+            }
+            return tracks;
         }
     }
 }
