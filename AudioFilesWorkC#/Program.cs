@@ -10,11 +10,18 @@ namespace AudioFilesWorkC_
     {
         static void Main(string[] args)
         {
-            YandexMusic.PathCopyTo = Manager.pathDestination!;
-            //Task task = Manager.CopyFromYandexMusic();
-            //task.Wait();
+            Console.WriteLine("Уеажите путь к папке:");
+            string? path = Console.ReadLine();
+            //YandexMusic.PathCopyTo = Manager.pathDestination!;
+            YandexMusic.PathCopyTo = Path.GetFullPath(path!);
 
-            Manager.CheckDirDestination();
+
+
+
+            Task task = Manager.CopyFromYandexMusic();
+            task.Wait();
+
+            //Manager.CheckDirDestination();
 
 
         }

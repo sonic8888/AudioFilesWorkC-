@@ -327,7 +327,7 @@ namespace AudioFilesWorkC_
             void display(Track track) => Console.WriteLine(++n + ". " + track);
             return display;
         }
-        public static void DisplayTracks(IEnumerable<Track>track)
+        public static void DisplayTracks(IEnumerable<Track> track)
         {
             int n = 0;
             foreach (var item in track)
@@ -376,7 +376,7 @@ namespace AudioFilesWorkC_
             }
             return propertys;
         }
-        private static Track[] CreateTrackArray(IEnumerable<FileInfo> files)
+        public static Track[] CreateTrackArray(IEnumerable<FileInfo> files)
         {
             var tracks = new Track[files.Count()];
             string pattern = @"\w+?.*?\(\w*.*\)";
