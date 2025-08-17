@@ -9,20 +9,26 @@ namespace AudioFilesWorkC_
 {
     internal class Track : IComparable
     {
-        private string name = "unknown";
-        private string? artist = "unknown";
+        public string name = "unknown";
+        public string? artist = "unknown";
+        private string extension = ".mp3";
+        public string Extension
+        {
+            get { return extension; }
+            set { extension = value; }
+        }
         public string Name
         {
             get { return name; }
             set { name = Track.NormalizeName(value); }
         }
-        public string? Artist
+        public string Artist
         {
             get { return artist; }
             set { artist = Track.NormalizeName(value); }
         }
-        public string? TrackId { get; set; }
-        public string? ArtistId { get; set; }
+        public string? TrackId { get; set; } = "-1";
+        public string? ArtistId { get; set; } = "-1";
         public string? NameArtist
         {
             get { return $"{Name}({Artist})"; }
@@ -60,7 +66,7 @@ namespace AudioFilesWorkC_
         public static string Data() => DateTime.Now.ToString("d");
         public override int GetHashCode()
         {
-            return Name.GetHashCode();
+            return name.GetHashCode() ;
         }
         private static string NormalizeName(string? name)
         {

@@ -31,6 +31,10 @@ namespace AudioFilesWorkC_
         /// PathCopyTo путь к папке куда копируются треки.
         /// </summary>
         public static string PathCopyTo { get; set; } = "";
+        /// <summary>
+        /// PathCopyFrom путь к папке откуда добавляем файлы
+        /// </summary>
+        public static string PathCopyFrom { get; set; } = "";
 
         /// <summary>
         /// Data сегодняшняя дата.
@@ -145,7 +149,7 @@ namespace AudioFilesWorkC_
         /// </summary>
         /// <param name="track">класс Track</param>
         /// <returns>имя трека + (артист)</returns>
-        public static string GetName(Track track) => $"{track.Name}({track.Artist}).mp3";
+        public static string GetName(Track track) => $"{track.Name}({track.Artist}){track.Extension}";
 
         ///// <summary>
         ///// Копирует трек из папки источника в папку назначения.
@@ -185,7 +189,7 @@ namespace AudioFilesWorkC_
         //}
 
         /// <summary>
-        /// Копирует трек из папки источника в папку назначения.
+        /// Копирует трек из папки источника(Яндекс Музыка) в папку назначения.
         /// </summary>
         /// <param name="track">AudioFilesWorkC_.Track</param>
         /// <param name="sours">папка источник</param>
@@ -199,14 +203,14 @@ namespace AudioFilesWorkC_
         {
             isException = true;
             if (!Path.Exists(destination)) throw new ArgumentException($"Path:{destination} - There is no such way.");
-            string _sours = Path.Combine(sours!, track.TrackId + ".mp3");
+            string _sours = Path.Combine(sours!, track.TrackId + track.Extension);
             string _destination = "";
             if (isRename)
                 _destination = Path.Combine(destination, GetName(track));
             else
-                _destination = Path.Combine(destination, track.TrackId + ".mp3");
+                _destination = Path.Combine(destination, track.TrackId + track.Extension);
             FileInfo file = new FileInfo(_sours);
-         
+
             try
             {
                 if (file.Exists)
@@ -233,6 +237,49 @@ namespace AudioFilesWorkC_
             return file;
 
         }
+
+
+        public static FileInfo CopyFromTo(Track track, string? sours, string destination, out bool isException, bool isRename = true, bool isOverwrite = true)
+        {
+            isException = true;
+            if (!Path.Exists(destination)) throw new ArgumentException($"Path:{destination} - There is no such way.");
+            string _sours = Path.Combine(sours!, track.Name + track.Extension);
+            string _destination = "";
+            if (isRename)
+                _destination = Path.Combine(destination, GetName(track));
+            else
+                _destination = Path.Combine(destination, track.Name + track.Extension);
+            FileInfo file = new FileInfo(_sours);
+
+            try
+            {
+                if (file.Exists)
+                { file = file.CopyTo(_destination, isOverwrite); }
+                else
+                    throw new ArgumentException($"Path:{_destination} - there is no such file");
+            }
+            catch (IOException)
+            {
+                if (isOverwrite)
+                {
+                    Manager.DisplayColor($"Трек '{track}' уже существует. Перезаписываем его.", ConsoleColor.Green);
+                }
+                else { Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Green); }
+
+                isException = false;
+            }
+            catch (Exception ex)
+            {
+
+                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
+                isException = false;
+            }
+            return file;
+
+        }
+
+
+
 
         /// <summary>
         /// Находит путь к БД папки назначения, если нет то создает БД.

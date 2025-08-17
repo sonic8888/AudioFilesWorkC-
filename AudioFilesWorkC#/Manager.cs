@@ -16,6 +16,7 @@ namespace AudioFilesWorkC_
         /// Путь к папке в которой находятся а-файлы и БД.
         /// </summary>
         public static string? pathDestination = @"D:\test";
+        public static string? pathFrom = @"D:\music\test";
         /// <summary>
         /// Выбор действия
         /// </summary>
@@ -244,11 +245,29 @@ namespace AudioFilesWorkC_
         {
             Track[] trackDB = GetDataFromPathDestination();
             var files = Directory.GetFiles(Manager.pathDestination!);
-            var files_info = files.Where(f => f.EndsWith(".mp3")).Select(f => new FileInfo(f));
+            var files_info = files.Where(f => f.EndsWith(".mp3") || f.EndsWith(".flac")).Select(f => new FileInfo(f));
+            FileInfo f = new FileInfo(Manager.pathDestination!);
+           
             Track[] trackDir = CreateTrackArray(files_info);
-            var f = trackDir.Except(trackDB);// if f > 0 add in DB or DELETE from DIR
-            var d = trackDB.Except(trackDir);//if d > 0 add in DIR or DELETE from DB
-            DisplayTracks(d);
+            List<Track> trDB = new List<Track>(trackDB);
+            List<Track> trDir = new List<Track>(trackDir);
+            var ls = new List<Track>();
+            foreach (var track in trDir)
+            {
+                if (trDB.Contains(track))
+                { continue; }
+                else { ls.Add(track); }
+            }
+
+            //var f = trackDir.Except(trackDB);// if f > 0 add in DB or DELETE from DIR
+            //var d = trackDB.Except(trackDir);//if d > 0 add in DIR or DELETE from DB
+            //var c = d.Except(f);
+            //DisplayTracks(f);
+            DisplayTracks(ls);
+            //Console.WriteLine("***********************************************************************");
+            //DisplayTracks(f);
+            //Console.WriteLine("***********************************************************************");
+            //DisplayTracks(c);
             //var prop = GetProperty(trackD, "NameArtist");
             //Console.WriteLine($"DB:{prop.Count}");
             //Console.WriteLine($"DIR:{files_info.Count}");
@@ -256,6 +275,36 @@ namespace AudioFilesWorkC_
             //var f = files_info.Except(copy_files);
             //Console.WriteLine(f.Count());
 
+        }
+
+        public static void AddFiles()
+        {
+            var files = Directory.GetFiles(Manager.pathFrom!);
+            var files_info = files.Where(f => f.EndsWith(".mp3") || f.EndsWith(".flac")).Select(f => new FileInfo(f));
+            string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
+            //DisplayFileInfo(files_info);
+            var tracks = CreateTrackArray(files_info);
+            try
+            {
+                var display = Manager.DisplayTrack(new Track());
+                foreach (var item in tracks)
+                {
+                    bool isException;
+                    YandexMusic.CopyFromTo(item, YandexMusic.PathCopyFrom, YandexMusic.PathCopyTo, out isException, true, false);
+                    if (isException)
+                    {
+                        Manager.InsertData(item, pathDbDestination);
+                        display(item);
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                DisplayColor(ex.Message, ConsoleColor.Red);
+            }
         }
 
         /// <summary>
@@ -332,8 +381,12 @@ namespace AudioFilesWorkC_
             int n = 0;
             foreach (var item in track)
             {
-                Console.WriteLine($"{++n} {item}");
+                Console.WriteLine($"{++n} Name:{item.Name}, Artist:{item.Artist}, Extension:{item.Extension}, TrackId:{item.TrackId}, ArtistId:{item.ArtistId}");
             }
+        }
+        public static void DisplayFileInfo(IEnumerable<FileInfo> fileInfo)
+        {
+            foreach (var item in fileInfo) { Console.WriteLine(item.FullName); }
         }
 
         public static string NormalizeName(string? name)
@@ -353,10 +406,10 @@ namespace AudioFilesWorkC_
             return tr;
         }
 
-        private static List<string> GetProperty(Track[] track, string namePropery, string extension = ".mp3", bool isAddExtension = true)
+        private static List<string> GetProperty(Track[] track, string nameProperty, bool isAddExtension = true)
         {
             Type track_type = typeof(Track);
-            var property = track_type.GetProperty(namePropery);
+            var property = track_type.GetProperty(nameProperty);
             if (property == null) throw new ArgumentNullException(nameof(property));
             var propertys = new List<string>();
             foreach (var item in track)
@@ -366,7 +419,7 @@ namespace AudioFilesWorkC_
                 string value_property = "";
                 if (isAddExtension)
                 {
-                    value_property = value.ToString()! + extension;
+                    value_property = value.ToString()! + item.Extension;
                 }
                 else
                 {
@@ -391,12 +444,12 @@ namespace AudioFilesWorkC_
                     int index = name.IndexOf('(');
                     string n = name.Substring(0, index);
                     string a = name.Substring(index + 1).Trim(')');
-                    tracks[i++] = new Track(n, a);
+                    tracks[i++] = new Track() { name = n, artist = a, Extension = extension };
 
                 }
                 else
                 {
-                    tracks[i++] = new Track(name);
+                    tracks[i++] = new Track() { name = name, Extension = extension };
                 }
             }
             return tracks;
