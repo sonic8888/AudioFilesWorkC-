@@ -10,8 +10,11 @@ namespace AudioFilesWorkC_
     internal class Track : IComparable
     {
         public string name = "unknown";
-        public string? artist = "unknown";
+        private string title = "unknown";
         private string extension = ".mp3";
+        private static string pattern = @"[\*\|\\\:\""<>\?\/]";
+        private static Regex regex = new Regex(pattern);
+        private static string target = ".";
         public string Extension
         {
             get { return extension; }
@@ -19,15 +22,20 @@ namespace AudioFilesWorkC_
         }
         public string Name
         {
-            get { return name; }
-            set { name = Track.NormalizeName(value); }
+            get { return title + extension; }
+            
         }
-        public string Artist
+        public string Title
         {
-            get { return artist; }
-            set { artist = Track.NormalizeName(value); }
+            get { return title; }
+            set { title = Track.NormalizeName(value); }
         }
-        public string? TrackId { get; set; } = "-1";
+        public string AlbumId { get; set; } = "-1";
+
+        public string Artist { get; set; } = "";
+        public string Album { get; set; } = "unknown";
+        public string? Year { get; set; }
+        public string TrackId { get; set; } = "-1";
         public string? ArtistId { get; set; } = "-1";
         public string? NameArtist
         {
@@ -38,17 +46,10 @@ namespace AudioFilesWorkC_
         public string? Name_Artist { get; set; }
 
         public Track() { }
-        public Track(string name)
-        {
-            Name = name;
-        }
-        public Track(string name, string? artist) : this(name)
-        {
-            Artist = artist;
-        }
+
         public override string ToString()
         {
-            return $"{Name} ({Artist})";
+            return $"Name:{Name}, Artist:{Artist}, Album:{Album}, Year:{Year})";
         }
 
         public override bool Equals(object? obj)
@@ -66,16 +67,20 @@ namespace AudioFilesWorkC_
         public static string Data() => DateTime.Now.ToString("d");
         public override int GetHashCode()
         {
-            return name.GetHashCode() ;
+            return TrackId.GetHashCode();
         }
         private static string NormalizeName(string? name)
         {
             if (name == null) return "";
-            string pattern = @"\W";
-            string target = ".";
-            Regex regex = new Regex(pattern);
-            string result = regex.Replace(name, target);
-            return result;
+            if (regex.IsMatch(name))
+            {
+                string result = regex.Replace(name, target);
+                return result;
+            }
+            else
+            {
+                return name;
+            }
         }
 
         public int CompareTo(object? obj)
