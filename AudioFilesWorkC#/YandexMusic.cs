@@ -296,7 +296,7 @@ namespace AudioFilesWorkC_
                 else
                 {
                     string _str_connection = DbSqlite.Get_str_connection(_sours_db);
-                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.queries["str_create"]);
+                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.Dictionary_quearis["str_create"]);
                     return _sours_db;
                 }
 

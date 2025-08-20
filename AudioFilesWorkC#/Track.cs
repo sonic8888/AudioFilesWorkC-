@@ -32,9 +32,9 @@ namespace AudioFilesWorkC_
         }
         public string AlbumId { get; set; } = "-1";
 
-        public string Artist { get; set; } = "";
-        public string Album { get; set; } = "unknown";
-        public string? Year { get; set; }
+        public string? Artist { get; set; } = "";
+        public string? Album { get; set; } = "unknown";
+        public string? Year { get; set; } = "unknown";
         public string TrackId { get; set; } = "-1";
         public string? ArtistId { get; set; } = "-1";
         public string? NameArtist
@@ -49,7 +49,7 @@ namespace AudioFilesWorkC_
 
         public override string ToString()
         {
-            return $"Name:{Name}, Artist:{Artist}, Album:{Album}, Year:{Year})";
+            return $"Name:{Name}, Artist:{Artist}, Album:{Album}, Year:{Year}, TrackId:{TrackId})";
         }
 
         public override bool Equals(object? obj)

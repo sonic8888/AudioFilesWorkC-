@@ -11,7 +11,7 @@ namespace AudioFilesWorkC_
     internal static class DbSqlite
     {
         public static string[] values = new string[] { "5" };
-        public static Dictionary<string, string> queries = new Dictionary<string, string>()
+        public static Dictionary<string, string> Dictionary_quearis = new Dictionary<string, string>()
         {
             {"str1","SELECT Count(TrackId) FROM T_PlaylistTrack WHERE Kind = @value;" },
             {"str2", "SELECT TrackId FROM T_PlaylistTrack WHERE Kind = @value;" },
@@ -21,13 +21,14 @@ namespace AudioFilesWorkC_
             {"str5", "SELECT Name FROM T_Artist WHERE Id = @value" },
             {"str6", "SELECT Count(Name) From T_Trask_Yandex" },
             {"str7","SELECT * FROM  T_Trask_Yandex " },
-            {"str8", "SELECT Title FROM T_Album WHERE Id = @value" },
+            {"del", "DELETE FROM T_Trask_Yandex WHERE Id = @value" },
             {"str9", "SELECT Year FROM T_Album WHERE Id = @value" },
-            {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Title  VARCHAR, Artist  VARCHAR, Album VARCHAR, Year VARCHAR, TrackId  VARCHAR, ArtistId  VARCHAR, NameArtist   VARCHAR, Data  VARCHAR );" },
-            {"str_insert","INSERT INTO T_Trask_Yandex (Title, Artist,Album, Year, TrackId, ArtistId, NameArtist, Data)  VALUES (@title, @artist,@album, @year, @track_id, @artist_id, @name_artist, @data)" }
+            {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Title  VARCHAR, Artist  VARCHAR, Album VARCHAR, Year VARCHAR, TrackId  VARCHAR, Data  VARCHAR );" },
+            {"str_insert","INSERT INTO T_Trask_Yandex (Title, Artist, Album, Year, TrackId, Data)  VALUES (@title, @artist, @album, @year, @track_id, @data); SELECT last_insert_rowid();" },
+            { "str11", "SELECT Title, Year, ArtistsString FROM T_Album WHERE Id = @value" }
         };
 
-
+        public static string PathCopyTo = @"D:\test";
         public static string NameMyDB = "my_music.sqlite";
         public static string Get_str_connection(string? data_sours, string mode = "ReadWriteCreate", Dictionary<string, string>? params_com = null)
         {
@@ -210,9 +211,8 @@ namespace AudioFilesWorkC_
             }
         }
 
-        public static int ExecuteNonQuery(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
+        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string)[] property_method, Track track, List<SqliteParameter>? sql_params = null)
         {
-            int rows = -1;
             using (var connection = new SqliteConnection(str_connection))
             {
                 connection.Open();
@@ -224,9 +224,91 @@ namespace AudioFilesWorkC_
                         command.Parameters.Add(item);
                     }
                 }
-                rows = command.ExecuteNonQuery();
+                using (SqliteDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        var type_track = typeof(Track);
+                        var type_reader = reader.GetType();
+                        Queue<PropertyInfo?> property = new Queue<PropertyInfo?>();
+                        Queue<MethodInfo?> methods = new Queue<MethodInfo?>();
+                        foreach (var item in property_method)
+                        {
+                            var property_track = type_track.GetProperty(item.Item1);
+                            property.Enqueue(property_track);
+                            var method_reader = type_reader.GetMethod(item.Item2);
+                            methods.Enqueue(method_reader);
+                        }
+                        while (reader.Read())
+                        {
+                            for (int i = 0; i < property_method.Length; i++)
+                            {
+                                var method_reader = methods.Dequeue();
+                                var res = method_reader?.Invoke(reader, parameters: new object[] { i });
+                                var property_track = property.Dequeue();
+                                property_track?.SetValue(track, res);
+
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        public static int ExecuteNonQuery(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
+        {
+            int rows = -1;
+            try
+            {
+                using (var connection = new SqliteConnection(str_connection))
+                {
+                    connection.Open();
+                    SqliteCommand command = new SqliteCommand(sqlExpression, connection);
+                    if (sql_params != null)
+                    {
+                        foreach (var item in sql_params)
+                        {
+                            command.Parameters.Add(item);
+                        }
+                    }
+                    rows = command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
+            }
+
             return rows;
+        }
+
+        /// <summary>
+        /// Находит путь к БД папки назначения, если нет то создает БД.
+        /// </summary>
+        /// <returns>Путь к БД</returns>
+        /// <exception cref="ArgumentException">Если не нашел папку назначения</exception>
+        public static string GetPathDbSqliteDestination()
+        {
+            if (Path.Exists(PathCopyTo))
+            {
+                string _sours_db = Path.Combine(PathCopyTo, DbSqlite.NameMyDB);
+                if (Path.Exists(_sours_db))
+                    return _sours_db;
+                else
+                {
+                    string _str_connection = DbSqlite.Get_str_connection(_sours_db);
+                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.Dictionary_quearis["str_create"]);
+                    return _sours_db;
+                }
+
+            }
+            else
+            {
+                throw new ArgumentException($"{PathCopyTo} - There is not such way");
+            }
+
+
+
         }
     }
 }
