@@ -11,7 +11,7 @@ namespace AudioFilesWorkC_
     internal static class DbSqlite
     {
         public static string[] values = new string[] { "5" };
-        public static Dictionary<string, string> Dictionary_quearis = new Dictionary<string, string>()
+        public static Dictionary<string, string> Dictionary_query = new Dictionary<string, string>()
         {
             {"str1","SELECT Count(TrackId) FROM T_PlaylistTrack WHERE Kind = @value;" },
             {"str2", "SELECT TrackId FROM T_PlaylistTrack WHERE Kind = @value;" },
@@ -25,7 +25,8 @@ namespace AudioFilesWorkC_
             {"str9", "SELECT Year FROM T_Album WHERE Id = @value" },
             {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Title  VARCHAR, Artist  VARCHAR, Album VARCHAR, Year VARCHAR, TrackId  VARCHAR, Data  VARCHAR );" },
             {"str_insert","INSERT INTO T_Trask_Yandex (Title, Artist, Album, Year, TrackId, Data)  VALUES (@title, @artist, @album, @year, @track_id, @data); SELECT last_insert_rowid();" },
-            { "str11", "SELECT Title, Year, ArtistsString FROM T_Album WHERE Id = @value" }
+            { "str11", "SELECT Title, Year, ArtistsString FROM T_Album WHERE Id = @value" },
+            { "str12", "SELECT  TrackId FROM T_Trask_Yandex" }
         };
 
         public static string PathCopyTo = @"D:\test";
@@ -89,7 +90,7 @@ namespace AudioFilesWorkC_
             return sqliteParameters;
         }
 
-        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method, ref Track[] tracks, List<SqliteParameter>? sql_params = null)
+        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method, Track[] tracks, List<SqliteParameter>? sql_params = null)
         {
             using (var connection = new SqliteConnection(str_connection))
             {
@@ -124,11 +125,9 @@ namespace AudioFilesWorkC_
 
             }
         }
-
-
-
-        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string)[] property_method_array, ref Track[] tracks, List<SqliteParameter>? sql_params = null)
+        public static List<string> ExecuteReader(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
         {
+            List<string> list_data = new List<string>();
             using (var connection = new SqliteConnection(str_connection))
             {
                 connection.Open();
@@ -144,38 +143,19 @@ namespace AudioFilesWorkC_
                 {
                     if (reader.HasRows) // если есть данные
                     {
-                        int n = 0;
-                        var type_track = typeof(Track);
-                        var type_reader = reader.GetType();
-                        int lenght = property_method_array.Length;
-                        PropertyInfo?[] pi = new PropertyInfo[lenght];
-                        MethodInfo?[] mi = new MethodInfo[lenght];
-                        for (int i = 0; i < lenght; i++)
+                        while (reader.Read())
                         {
-                            var pr_m = property_method_array[i];
-                            pi[i] = type_track.GetProperty(pr_m.Item1);
-                            mi[i] = type_reader.GetMethod(pr_m.Item2);
-                        }
-                        while (reader.Read())   // построчно считываем данные
-                        {
-                            Track track = tracks[n++];
-                            for (int i = 0; i < lenght; i++)
-                            {
-                                MethodInfo? method = mi[i];
-                                PropertyInfo? property = pi[i];
-                                var res = method?.Invoke(reader, parameters: new object[] { i + 1 });
-                                property?.SetValue(track, res);
-                            }
-
-
-
-
+                            var result = reader.GetString(0);
+                            list_data.Add(result);
                         }
                     }
                 }
-
             }
+            return list_data;
         }
+
+
+
 
         public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method, Track track, List<SqliteParameter>? sql_params = null)
         {
@@ -298,7 +278,7 @@ namespace AudioFilesWorkC_
                 else
                 {
                     string _str_connection = DbSqlite.Get_str_connection(_sours_db);
-                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.Dictionary_quearis["str_create"]);
+                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.Dictionary_query["str_create"]);
                     return _sours_db;
                 }
 

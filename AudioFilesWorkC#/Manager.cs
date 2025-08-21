@@ -77,7 +77,7 @@ namespace AudioFilesWorkC_
             string? sours_db = YandexMusic.PathDBSqlite;
             string sql_conn = DbSqlite.Get_str_connection(sours_db);
             List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
-            object? res = DbSqlite.ExecuteScalar(sql_conn, DbSqlite.Dictionary_quearis["str1"], com_params);
+            object? res = DbSqlite.ExecuteScalar(sql_conn, DbSqlite.Dictionary_query["str1"], com_params);
 
             if (res != null)
             {
@@ -87,16 +87,16 @@ namespace AudioFilesWorkC_
                 {
                     tracks[i] = new Track();
                 }
-                DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_quearis["str2"], ("TrackId", "GetString"), ref tracks, com_params);
+                DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], ("TrackId", "GetString"),  tracks, com_params);
                 foreach (var item in tracks)
                 {
                     try
                     {
                         List<SqliteParameter> lp_title = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.TrackId! } });
-                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_quearis["str3"], ("Title", "GetString"), item, lp_title);
-                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_quearis["str10"], ("AlbumId", "GetString"), item, lp_title);
+                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str3"], ("Title", "GetString"), item, lp_title);
+                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str10"], ("AlbumId", "GetString"), item, lp_title);
                         List<SqliteParameter> lp_album = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.AlbumId! } });
-                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_quearis["str11"], new (string, string)[] { ("Album", "GetString"), ("Year", "GetString"), ("Artist", "GetString") }, item, lp_album);
+                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str11"], new (string, string)[] { ("Album", "GetString"), ("Year", "GetString"), ("Artist", "GetString") }, item, lp_album);
                         item.Name = item.Title;
                     }
                     catch (Exception ex)
@@ -129,7 +129,7 @@ namespace AudioFilesWorkC_
 
                     tfile.Tag.Year = 0;
                 }
-                tfile.Tag.Performers = new string[] {track.Artist!} ;
+                tfile.Tag.Performers = new string[] { track.Artist! };
                 tfile.Tag.TrackCount = Convert.ToUInt32(track.TrackId);
                 tfile.Tag.DateTagged = DateTime.Now;
                 tfile.Save();
@@ -161,18 +161,15 @@ namespace AudioFilesWorkC_
                     {
                         Manager.DisplayColor($"DELETE: rows:{rows}, track:{item}", ConsoleColor.Red);
                         DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination),
-                DbSqlite.Dictionary_quearis["del"], DbSqlite.Get_list_params(new Dictionary<string, string?>() { { "@value", rows.ToString() } }));
+                DbSqlite.Dictionary_query["del"], DbSqlite.Get_list_params(new Dictionary<string, string?>() { { "@value", rows.ToString() } }));
+                        continue;
                     }
 
                 }
-
-                CreateTags(item,Manager.pathDestination);
-
-                //Console.WriteLine(item);
+                CreateTags(item, Manager.pathDestination);
             }
         }
 
-        //}
 
         /// <summary>
         /// Записываем данные из Track в БД(NameMyDB).
@@ -193,7 +190,7 @@ namespace AudioFilesWorkC_
                 dicParam.Add("@track_id", track.TrackId);
                 dicParam.Add("@data", Track.Data());
                 var comParams = DbSqlite.Get_list_params(dicParam);
-                var r = DbSqlite.ExecuteScalar(DbSqlite.Get_str_connection(pathDbDestination), DbSqlite.Dictionary_quearis["str_insert"], comParams);
+                var r = DbSqlite.ExecuteScalar(DbSqlite.Get_str_connection(pathDbDestination), DbSqlite.Dictionary_query["str_insert"], comParams);
                 rows = Convert.ToInt32(r);
             }
             catch (Exception ex)
@@ -205,139 +202,7 @@ namespace AudioFilesWorkC_
             return rows;
         }
 
-        ///// <summary>
-        ///// Извлекает данные из БД и упаковывает их в массив 'Track'.
-        ///// </summary>
-        ///// <returns>Track[]</returns>
-        //public static Track[] GetDataFromPathDestination()
-        //{
-        //    Track[] tracks = GetEmptyTrackFromDB();
-        //    if (tracks != null)
-        //    {
-        //        string sours_dir = YandexMusic.GetPathDbSqliteDestination();
-        //        string str_connection = DbSqlite.Get_str_connection(sours_dir);
-        //        (string, string)[] pr_meth = new (string, string)[] { ("Name", "GetString"), ("Artist", "GetString"), ("TrackId", "GetString"), ("ArtistId", "GetString"), ("Name_Artist", "GetString"), ("DataCreate", "GetString") };
-        //        DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_quearis["str7"], pr_meth, ref tracks);
-        //    }
-        //    return tracks!;
-        //}
 
-        ///// <summary>
-        ///// Выводит на консоль последовательность.
-        ///// </summary>
-        ///// <param name="t">IEnumerable</param>
-        //public static void Display(IEnumerable t)
-        //{
-
-        //    foreach (var item in t)
-        //    {
-        //        Console.WriteLine(item);
-
-        //    }
-        //}
-        //public static void CheckDirDestination()
-        //{
-        //    Track[] trackDB = GetDataFromPathDestination();
-        //    var files = Directory.GetFiles(Manager.pathDestination!);
-        //    var files_info = files.Where(f => f.EndsWith(".mp3") || f.EndsWith(".flac")).Select(f => new FileInfo(f));
-        //    FileInfo f = new FileInfo(Manager.pathDestination!);
-
-        //    Track[] trackDir = CreateTrackArray(files_info);
-        //    List<Track> trDB = new List<Track>(trackDB);
-        //    List<Track> trDir = new List<Track>(trackDir);
-        //    var ls = new List<Track>();
-        //    foreach (var track in trDir)
-        //    {
-        //        if (trDB.Contains(track))
-        //        { continue; }
-        //        else { ls.Add(track); }
-        //    }
-
-        //    //var f = trackDir.Except(trackDB);// if f > 0 add in DB or DELETE from DIR
-        //    //var d = trackDB.Except(trackDir);//if d > 0 add in DIR or DELETE from DB
-        //    //var c = d.Except(f);
-        //    //DisplayTracks(f);
-        //    DisplayTracks(ls);
-        //    //Console.WriteLine("***********************************************************************");
-        //    //DisplayTracks(f);
-        //    //Console.WriteLine("***********************************************************************");
-        //    //DisplayTracks(c);
-        //    //var prop = GetProperty(trackD, "NameArtist");
-        //    //Console.WriteLine($"DB:{prop.Count}");
-        //    //Console.WriteLine($"DIR:{files_info.Count}");
-        //    //var not_DB = files_info.Where(f=>!prop.Contains(f.Name)).ToList();
-        //    //var f = files_info.Except(copy_files);
-        //    //Console.WriteLine(f.Count());
-
-        //}
-
-        //public static void AddFiles()
-        //{
-        //    var files = Directory.GetFiles(Manager.pathFrom!);
-        //    var files_info = files.Where(f => f.EndsWith(".mp3") || f.EndsWith(".flac")).Select(f => new FileInfo(f));
-        //    string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
-        //    //DisplayFileInfo(files_info);
-        //    var tracks = CreateTrackArray(files_info);
-        //    try
-        //    {
-        //        var display = Manager.DisplayTrack(new Track());
-        //        foreach (var item in tracks)
-        //        {
-        //            bool isException;
-        //            YandexMusic.CopyFromTo(item, YandexMusic.PathCopyFrom, YandexMusic.PathCopyTo, out isException, true, false);
-        //            if (isException)
-        //            {
-        //                Manager.InsertData(item, pathDbDestination);
-        //                display(item);
-
-
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-
-        //        DisplayColor(ex.Message, ConsoleColor.Red);
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Копирует недостающие треки из папки Яндекс Музыка в папку назначения и заносит данные в БД.
-        ///// </summary>
-        ///// <returns></returns>
-        ///// <exception cref="Exception"></exception>
-        //async public static Task CopyFromYandexMusic()
-        //{
-
-        //    static void Copy()
-        //    {
-        //        string pathDbDestination = YandexMusic.GetPathDbSqliteDestination();
-        //        //Track[] tracks = GetDifferenceYandexAndDestination();
-        //        try
-        //        {
-        //            var display = Manager.DisplayTrack(new Track());
-        //            foreach (var item in tracks)
-        //            {
-        //                bool isException;
-        //                YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
-        //                if (isException)
-        //                {
-        //                    Manager.InsertData(item, pathDbDestination);
-        //                    display(item);
-
-
-        //                }
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            DisplayColor(ex.Message, ConsoleColor.Red);
-        //        }
-        //    }
-
-        //    await Task.Run(Copy);
-
-        //}
 
         public static void DisplayColor(string message, System.ConsoleColor color = ConsoleColor.White)
         {
@@ -383,30 +248,20 @@ namespace AudioFilesWorkC_
             }
             return propertys;
         }
-        //public static Track[] CreateTrackArray(IEnumerable<FileInfo> files)
-        //{
-        //    var tracks = new Track[files.Count()];
-        //    string pattern = @"\w+?.*?\(\w*.*\)";
-        //    int i = 0;
-        //    foreach (var file in files)
-        //    {
-        //        string name = file.Name;
-        //        string extension = file.Extension;
-        //        name = name.TrimEnd(extension.ToArray());
-        //        if (Regex.IsMatch(name, pattern))
-        //        {
-        //            int index = name.IndexOf('(');
-        //            string n = name.Substring(0, index);
-        //            string a = name.Substring(index + 1).Trim(')');
-        //            tracks[i++] = new Track() { name = n, artist = a, Extension = extension };
 
-        //        }
-        //        else
-        //        {
-        //            tracks[i++] = new Track() { name = name, Extension = extension };
-        //        }
-        //    }
-        //    return tracks;
-        //}
+        public static void GetDifferentTracks()
+        {
+            string path = DbSqlite.GetPathDbSqliteDestination();
+            string str_connection = DbSqlite.Get_str_connection(path);
+            var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"]);
+            Manager.Display(list_trackId_destination);
+
+            string? sours_db = YandexMusic.PathDBSqlite;
+            string sql_conn = DbSqlite.Get_str_connection(sours_db);
+            List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
+            var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params);
+            Manager.Display(list_trackId_destination);
+        }
+
     }
 }

@@ -170,42 +170,6 @@ namespace AudioFilesWorkC_
             return CreateCopyName;
         }
 
-        ///// <summary>
-        ///// Копирует трек из папки источника в папку назначения.
-        ///// </summary>
-        ///// <param name="track">класс Track</param>
-        ///// <param name="sours">папка источник</param>
-        ///// <param name="destination">папка назначение</param>
-        ///// <param name="isRename">изменяем имя трека или нет</param>
-        ///// <returns>FileInfo скопированного трека</returns>
-        ///// <exception cref="ArgumentException">если не нашел папку назначения</exception>
-        ///// <exception cref="Exception">ошибка при копировании</exception>
-        //public static FileInfo CopyTo(Track track, string? sours, string destination, bool isRename = true)
-        //{
-        //    if (Path.Exists(destination)!) throw new ArgumentException($"Path:{destination} - There is no such way.");
-        //    string _sours = Path.Combine(sours!, track.TrackId + ".mp3");
-        //    string _destination = "";
-        //    if (isRename)
-        //        _destination = Path.Combine(destination, GetName(track));
-        //    else
-        //        _destination = Path.Combine(destination, track.TrackId + ".mp3");
-        //    FileInfo file = new FileInfo(_sours);
-
-        //    try
-        //    {
-        //        if (file.Exists)
-        //        { file = file.CopyTo(_destination, true); }
-        //        else
-        //            throw new ArgumentException($"Path:{_destination} - there is no such file");
-        //    }
-        //    catch (Exception ex)
-        //    {
-
-        //        throw new Exception(ex.Message);
-        //    }
-        //    return file;
-
-        //}
 
         /// <summary>
         /// Копирует трек из папки источника(Яндекс Музыка) в папку назначения.
@@ -313,7 +277,7 @@ namespace AudioFilesWorkC_
                 else
                 {
                     string _str_connection = DbSqlite.Get_str_connection(_sours_db);
-                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.Dictionary_quearis["str_create"]);
+                    DbSqlite.ExecuteNonQuery(_str_connection, DbSqlite.Dictionary_query["str_create"]);
                     return _sours_db;
                 }
 
