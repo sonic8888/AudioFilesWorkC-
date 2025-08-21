@@ -149,7 +149,26 @@ namespace AudioFilesWorkC_
         /// </summary>
         /// <param name="track">класс Track</param>
         /// <returns>имя трека + (артист)</returns>
-        public static string GetName(Track track) => $"{track.Name}({track.Artist}){track.Extension}";
+        private static string GetName(Track track) => $"{track.Name}{track.Extension}";
+
+        private static Action<Track> RenameCopy(Track track)
+        {
+            int number = 1;
+            void CreateCopyName(Track track)
+            {
+                string copy = "(" + $"{number}" + ")";
+                string copy_1 = "(" + $"{number - 1}" + ")";
+                if (track.Name.EndsWith(copy_1))
+                {
+                    string name = track.Name;
+                    name = name.Replace(copy_1, "");
+                    track.Name = name;
+                }
+                track.Name = track.Name + copy;
+                number++;
+            }
+            return CreateCopyName;
+        }
 
         ///// <summary>
         ///// Копирует трек из папки источника в папку назначения.
@@ -199,42 +218,40 @@ namespace AudioFilesWorkC_
         /// <param name="isOverwrite">true если файл надо перезаписывать</param>
         /// <returns>System.IO.FileInfo скопированного трека</returns>
         /// <exception cref="ArgumentException">если путь к папке назначения не существует</exception>
-        public static FileInfo CopyTo(Track track, string? sours, string destination, out bool isException, bool isRename = true, bool isOverwrite = true)
+        public static FileInfo CopyTo(Track track, string? sours, string destination, out bool isException, bool isOverwrite = true)
         {
             isException = true;
             if (!Path.Exists(destination)) throw new ArgumentException($"Path:{destination} - There is no such way.");
             string _sours = Path.Combine(sours!, track.TrackId + track.Extension);
-            string _destination = "";
-            if (isRename)
-                _destination = Path.Combine(destination, GetName(track));
-            else
-                _destination = Path.Combine(destination, track.TrackId + track.Extension);
-            FileInfo file = new FileInfo(_sours);
+            string _destination = Path.Combine(destination, GetName(track));
+            FileInfo file_destination = new FileInfo(_destination);
+            if (file_destination.Exists)
+            {
+                var rename = RenameCopy(track);
+                do
+                {
+                    rename(track);
+                    _destination = Path.Combine(destination, GetName(track));
+                    file_destination = new FileInfo(_destination);
 
+                }
+                while (file_destination.Exists);
+            }
+            FileInfo file_sours = new FileInfo(_sours);
             try
             {
-                if (file.Exists)
-                { file = file.CopyTo(_destination, isOverwrite); }
+                if (file_sours.Exists)
+                { file_sours = file_sours.CopyTo(_destination, isOverwrite); }
                 else
-                    throw new ArgumentException($"Path:{_destination} - there is no such file");
-            }
-            catch (IOException)
-            {
-                if (isOverwrite)
-                {
-                    Manager.DisplayColor($"Трек '{track}' уже существует. Перезаписываем его.", ConsoleColor.Green);
-                }
-                else { Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Green); }
-
-                isException = false;
+                    throw new ArgumentException($"Path:{_sours} - не найден");
             }
             catch (Exception ex)
             {
-
-                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
+                Console.WriteLine(track);
+                Manager.DisplayColor(ex.Message, ConsoleColor.Magenta);
                 isException = false;
             }
-            return file;
+            return file_sours;
 
         }
 
@@ -271,7 +288,7 @@ namespace AudioFilesWorkC_
             catch (Exception ex)
             {
 
-                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
+                Manager.DisplayColor(ex.Message, ConsoleColor.Blue);
                 isException = false;
             }
             return file;

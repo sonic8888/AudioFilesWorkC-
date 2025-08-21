@@ -74,6 +74,7 @@ namespace AudioFilesWorkC_
         {
 
             SqliteParameter par = new SqliteParameter(name, value);
+            par.IsNullable = true;
             return par;
 
         }
@@ -276,7 +277,7 @@ namespace AudioFilesWorkC_
             }
             catch (Exception ex)
             {
-                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
+                Manager.DisplayColor(ex.Message, ConsoleColor.Yellow);
             }
 
             return rows;

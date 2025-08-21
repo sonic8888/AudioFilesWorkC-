@@ -97,73 +97,53 @@ namespace AudioFilesWorkC_
                         DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_quearis["str10"], ("AlbumId", "GetString"), item, lp_title);
                         List<SqliteParameter> lp_album = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.AlbumId! } });
                         DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_quearis["str11"], new (string, string)[] { ("Album", "GetString"), ("Year", "GetString"), ("Artist", "GetString") }, item, lp_album);
+                        item.Name = item.Title;
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-
+                        item.Name = item.Title;
+                        Console.WriteLine(item);
+                        DisplayColor(ex.Message, ConsoleColor.DarkYellow);
                     }
+
+
                 }
             }
             return tracks;
         }
 
-        ///// <summary>
-        ///// Возвращает массив треков - разницу корневой папки Яндекс Музыка 
-        ///// и папки назначения (pathDestination).
-        ///// </summary>
-        ///// <returns>Track[]</returns>
-        //public static Track[] GetDifferenceYandexAndDestination()
-        //{
-        //    Track[] tracksY = GetDataFromYandexDB();
-        //    Track[] trackD = GetDataFromPathDestination();
-        //    List<Track> tracksYY = new List<Track>(tracksY);
-        //    List<Track> tracksDD = new List<Track>(trackD);
-        //    tracksYY.Sort();
-        //    tracksDD.Sort();
-        //    foreach (var item in tracksDD)
-        //    {
-        //        if (tracksYY.Contains(item))
-        //            tracksYY.Remove(item);
-        //    }
-        //    tracksYY.Sort();
-        //    return tracksYY.ToArray();
-        //}
+        private static void CreateTags(Track track, string path_dir)
+        {
+            try
+            {
+                var tfile = TagLib.File.Create(Path.Combine(path_dir, track.Name + track.Extension));
+                tfile.Tag.Title = track.Title;
+                tfile.Tag.Album = track.Album;
+                try
+                {
+                    uint year = Convert.ToUInt32(track.Year);
+                    tfile.Tag.Year = year;
+                }
+                catch (Exception)
+                {
 
-        ///// <summary>
-        ///// получаем количество треков в папке "pathDestination" и создаем массив пустых "Track"
-        ///// </summary>
-        ///// <returns>массив Track[]</returns>
-        //static Track[] GetEmptyTrackFromDB()
-        //{
-        //    Track[] tracks = new Track[0];
-        //    try
-        //    {
-        //        string sours_dir = YandexMusic.GetPathDbSqliteDestination();
-        //        string str_connection = DbSqlite.Get_str_connection(sours_dir);
-        //        object? res = DbSqlite.ExecuteScalar(str_connection, DbSqlite.Dictionary_quearis["str6"]);
-        //        if (res != null)
-        //        {
-        //            int result = Convert.ToInt32(res);
-        //            tracks = new Track[result];
-        //            for (int i = 0; i < tracks.Length; i++)
-        //            {
-        //                tracks[i] = new Track();
-        //            }
+                    tfile.Tag.Year = 0;
+                }
+                tfile.Tag.Performers = new string[] {track.Artist!} ;
+                tfile.Tag.TrackCount = Convert.ToUInt32(track.TrackId);
+                tfile.Tag.DateTagged = DateTime.Now;
+                tfile.Save();
+            }
+            catch (Exception)
+            {
 
-        //        }
-        //    }
-
-        //    catch (Exception ex)
-        //    {
-
-        //        Console.WriteLine(ex.Message);
-        //        Environment.Exit(1);
-        //    }
-        //    return tracks;
-        //}
+                throw;
+            }
+        }
 
         /// <summary>
         /// вставляем в БД "NameMyDB" данные из  массива Track
+        /// и копируем файлы в папку 
         /// </summary>
         /// <param name="tracks">содержит данные о треке</param>
         public static void CopyInsertDataToDestination(Track[] tracks)
@@ -176,7 +156,7 @@ namespace AudioFilesWorkC_
                 if (rows > 0)
                 {
                     bool isException;
-                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, true, false);
+                    YandexMusic.CopyTo(item, YandexMusic.PathMusicDirYandex, YandexMusic.PathCopyTo, out isException, false);
                     if (!isException)//если копирование не получилось то удаляем данные из БД
                     {
                         Manager.DisplayColor($"DELETE: rows:{rows}, track:{item}", ConsoleColor.Red);
@@ -185,6 +165,8 @@ namespace AudioFilesWorkC_
                     }
 
                 }
+
+                CreateTags(item,Manager.pathDestination);
 
                 //Console.WriteLine(item);
             }
@@ -217,7 +199,7 @@ namespace AudioFilesWorkC_
             catch (Exception ex)
             {
                 Console.WriteLine(track);
-                Manager.DisplayColor(ex.Message, ConsoleColor.Red);
+                Manager.DisplayColor(ex.Message, ConsoleColor.Cyan);
             }
 
             return rows;

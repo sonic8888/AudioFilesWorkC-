@@ -14,8 +14,9 @@ namespace AudioFilesWorkC_
         static void Main(string[] args)
         {
             Track[] track = Manager.GetDataFromYandexDB();
-            Manager.CopyInsertDataToDestination(track);
 
+            Manager.CopyInsertDataToDestination(track);
+            //TestTabLib();
 
         }
 
@@ -24,7 +25,7 @@ namespace AudioFilesWorkC_
 
         static void TestTabLib()
         {
-            var tfile = TagLib.File.Create(@"D:\test\dir\myfile.mp3");
+            var tfile = TagLib.File.Create(@"D:\test\All That She Wants.mp3");
             string title = tfile.Tag.Title;
             string album = tfile.Tag.Album;
             var gg = tfile.Tag.Year;

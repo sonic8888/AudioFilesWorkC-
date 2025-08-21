@@ -9,22 +9,14 @@ namespace AudioFilesWorkC_
 {
     internal class Track : IComparable
     {
-        public string name = "unknown";
         private string title = "unknown";
-        private string extension = ".mp3";
         private static string pattern = @"[\*\|\\\:\""<>\?\/]";
         private static Regex regex = new Regex(pattern);
         private static string target = ".";
-        public string Extension
-        {
-            get { return extension; }
-            set { extension = value; }
-        }
-        public string Name
-        {
-            get { return title + extension; }
-            
-        }
+        public string Extension { get; set; } = ".mp3";
+
+        public string Name { get; set; } = "";
+
         public string Title
         {
             get { return title; }
@@ -32,24 +24,20 @@ namespace AudioFilesWorkC_
         }
         public string AlbumId { get; set; } = "-1";
 
-        public string? Artist { get; set; } = "";
+        public string? Artist { get; set; } = "unknown";
         public string? Album { get; set; } = "unknown";
         public string? Year { get; set; } = "unknown";
         public string TrackId { get; set; } = "-1";
         public string? ArtistId { get; set; } = "-1";
-        public string? NameArtist
-        {
-            get { return $"{Name}({Artist})"; }
-        }
         public string? DataCreate { get; set; }
 
-        public string? Name_Artist { get; set; }
+
 
         public Track() { }
 
         public override string ToString()
         {
-            return $"Name:{Name}, Artist:{Artist}, Album:{Album}, Year:{Year}, TrackId:{TrackId})";
+            return $"Name:{Title}, Artist:{Artist}, Album:{Album}, Year:{Year}, TrackId:{TrackId})";
         }
 
         public override bool Equals(object? obj)
@@ -79,13 +67,14 @@ namespace AudioFilesWorkC_
             }
             else
             {
+                
                 return name;
             }
         }
 
         public int CompareTo(object? obj)
         {
-            if (obj is Track track) return Name.CompareTo(track.Name);
+            if (obj is Track track) return Title.CompareTo(track.Title);
             else throw new ArgumentException("Некорректное значение параметра"); ;
         }
     }
