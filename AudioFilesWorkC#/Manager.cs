@@ -90,21 +90,22 @@ namespace AudioFilesWorkC_
                 DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], ("TrackId", "GetString"),  tracks, com_params);
                 foreach (var item in tracks)
                 {
-                    try
-                    {
-                        List<SqliteParameter> lp_title = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.TrackId! } });
-                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str3"], ("Title", "GetString"), item, lp_title);
-                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str10"], ("AlbumId", "GetString"), item, lp_title);
-                        List<SqliteParameter> lp_album = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.AlbumId! } });
-                        DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str11"], new (string, string)[] { ("Album", "GetString"), ("Year", "GetString"), ("Artist", "GetString") }, item, lp_album);
-                        item.Name = item.Title;
-                    }
-                    catch (Exception ex)
-                    {
-                        item.Name = item.Title;
-                        Console.WriteLine(item);
-                        DisplayColor(ex.Message, ConsoleColor.DarkYellow);
-                    }
+                    //try
+                    //{
+                    //    List<SqliteParameter> lp_title = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.TrackId! } });
+                    //    DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str3"], ("Title", "GetString"), item, lp_title);
+                    //    DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str10"], ("AlbumId", "GetString"), item, lp_title);
+                    //    List<SqliteParameter> lp_album = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.AlbumId! } });
+                    //    DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str11"], new (string, string)[] { ("Album", "GetString"), ("Year", "GetString"), ("Artist", "GetString") }, item, lp_album);
+                    //    item.Name = item.Title;
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    item.Name = item.Title;
+                    //    Console.WriteLine(item);
+                    //    DisplayColor(ex.Message, ConsoleColor.DarkYellow);
+                    //}
+                    TrackContent(item, sql_conn);
 
 
                 }
@@ -249,18 +250,16 @@ namespace AudioFilesWorkC_
             return propertys;
         }
 
-        public static void GetDifferentTracks()
+        public static List<Track> GetDifferentTracks()
         {
             string path = DbSqlite.GetPathDbSqliteDestination();
             string str_connection = DbSqlite.Get_str_connection(path);
             var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"]);
-            //Manager.Display(list_trackId_destination);
 
             string? sours_db = YandexMusic.PathDBSqlite;
             string sql_conn = DbSqlite.Get_str_connection(sours_db);
             List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
             var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params);
-            //Manager.Display(list_trackId_destination);
             foreach (var item in list_trackId_destination)
             {
                 if (list_trackId_yandex.Contains(item))
@@ -269,6 +268,33 @@ namespace AudioFilesWorkC_
                 }
             }
             Manager.Display(list_trackId_yandex);
+            List<Track> list = new List<Track>();
+            foreach (var item in list_trackId_yandex)
+            {
+                Track track = new Track() {TrackId = item };
+                TrackContent(track, sql_conn);
+                list.Add(track);
+            }
+            return list;
+        }
+
+        private static void TrackContent(Track item, string sql_conn)
+        {
+            try
+            {
+                List<SqliteParameter> lp_title = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.TrackId! } });
+                DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str3"], ("Title", "GetString"), item, lp_title);
+                DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str10"], ("AlbumId", "GetString"), item, lp_title);
+                List<SqliteParameter> lp_album = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", item.AlbumId! } });
+                DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str11"], new (string, string)[] { ("Album", "GetString"), ("Year", "GetString"), ("Artist", "GetString") }, item, lp_album);
+                item.Name = item.Title;
+            }
+            catch (Exception ex)
+            {
+                item.Name = item.Title;
+                Console.WriteLine(item);
+                DisplayColor(ex.Message, ConsoleColor.DarkYellow);
+            }
         }
 
     }
