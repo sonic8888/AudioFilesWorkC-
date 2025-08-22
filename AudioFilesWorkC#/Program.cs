@@ -18,16 +18,17 @@ namespace AudioFilesWorkC_
             //Manager.CopyInsertDataToDestination(track);
             //TestTabLib();
 
-            string path = DbSqlite.GetPathDbSqliteDestination();
-            string str_connection = DbSqlite.Get_str_connection(path);
-            var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"]);
-            Manager.Display(list_trackId_destination);
+            //string path = DbSqlite.GetPathDbSqliteDestination();
+            //string str_connection = DbSqlite.Get_str_connection(path);
+            //var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"]);
+            //Manager.Display(list_trackId_destination);
 
-            string? sours_db = YandexMusic.PathDBSqlite;
-            string sql_conn = DbSqlite.Get_str_connection(sours_db);
-            List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
-            var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params);
-            Manager.Display(list_trackId_destination);
+            //string? sours_db = YandexMusic.PathDBSqlite;
+            //string sql_conn = DbSqlite.Get_str_connection(sours_db);
+            //List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
+            //var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params);
+            //Manager.Display(list_trackId_destination);
+            Manager.GetDifferentTracks();
 
         }
 
