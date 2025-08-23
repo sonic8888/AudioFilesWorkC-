@@ -23,10 +23,10 @@ namespace AudioFilesWorkC_
             {"str7","SELECT * FROM  T_Trask_Yandex " },
             {"del", "DELETE FROM T_Trask_Yandex WHERE Id = @value" },
             {"str9", "SELECT Year FROM T_Album WHERE Id = @value" },
-            {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Title  VARCHAR, Artist  VARCHAR, Album VARCHAR, Year VARCHAR, TrackId  VARCHAR, Data  VARCHAR );" },
+            {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Title  VARCHAR, Artist  VARCHAR, Album VARCHAR, Year VARCHAR, TrackId  VARCHAR, Data  VARCHAR, Sours VARCHAR DEFAULT ('Yandex') );" },
             {"str_insert","INSERT INTO T_Trask_Yandex (Title, Artist, Album, Year, TrackId, Data)  VALUES (@title, @artist, @album, @year, @track_id, @data); SELECT last_insert_rowid();" },
             { "str11", "SELECT Title, Year, ArtistsString FROM T_Album WHERE Id = @value" },
-            { "str12", "SELECT  TrackId FROM T_Trask_Yandex" }
+            { "str12", "SELECT  TrackId FROM T_Trask_Yandex WHERE Sours = @value" }
         };
 
         public static string PathCopyTo = @"D:\test";
