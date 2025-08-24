@@ -10,9 +10,9 @@ namespace AudioFilesWorkC_
     internal class Track : IComparable
     {
         private string title = "unknown";
-        private static string pattern = @"[\*\|\\\:\""<>\?\/]";
-        private static Regex regex = new Regex(pattern);
-        private static string target = ".";
+        //private static string pattern = @"[\*\|\\\:\""<>\?\/]";
+        //private static Regex regex = new Regex(Manager.Pattern);
+        //private static string target = ".";
         public string Extension { get; set; } = ".mp3";
 
         public string Name { get; set; } = "";
@@ -20,7 +20,7 @@ namespace AudioFilesWorkC_
         public string Title
         {
             get { return title; }
-            set { title = Track.NormalizeName(value); }
+            set { title = Manager.NormalizeName(value); }
         }
         public string AlbumId { get; set; } = "-1";
 
@@ -57,20 +57,20 @@ namespace AudioFilesWorkC_
         {
             return TrackId.GetHashCode();
         }
-        private static string NormalizeName(string? name)
-        {
-            if (name == null) return "";
-            if (regex.IsMatch(name))
-            {
-                string result = regex.Replace(name, target);
-                return result;
-            }
-            else
-            {
-                
-                return name;
-            }
-        }
+        //private static string NormalizeName(string? name)
+        //{
+        //    if (name == null) return "";
+        //    if (regex.IsMatch(name))
+        //    {
+        //        string result = regex.Replace(name, Manager.Target);
+        //        return result;
+        //    }
+        //    else
+        //    {
+
+        //        return name;
+        //    }
+        //}
 
         public int CompareTo(object? obj)
         {

@@ -18,6 +18,9 @@ namespace AudioFilesWorkC_
         /// </summary>
         public static string pathDestination = @"D:\test";
         public static string? pathFrom = @"D:\music\test";
+        private static string Pattern = @"[\*\|\\\:\""<>\?\/]";
+        private static string Target = ".";
+        private static Regex regex = new Regex(Manager.Pattern);
         /// <summary>
         /// Выбор действия
         /// </summary>
@@ -282,6 +285,53 @@ namespace AudioFilesWorkC_
                 Console.WriteLine(item);
                 DisplayColor(ex.Message, ConsoleColor.DarkYellow);
             }
+        }
+
+
+        private static string GetRandomTrackId(string pathDirDestination)
+        {
+            string _sours_db = Path.Combine(pathDirDestination, DbSqlite.NameMyDB);
+            string sql_conn = DbSqlite.Get_str_connection(_sours_db);
+            var list_trackId_destination = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str13"]);
+            string trackId = "-1";
+            do
+            {
+                trackId = new Random().Next().ToString();
+
+            } while (list_trackId_destination.Contains(trackId));
+            return trackId;
+        }
+
+        public static string NormalizeName(string? name)
+        {
+            if (name == null) return "";
+            if (regex.IsMatch(name))
+            {
+                string result = regex.Replace(name, Manager.Target);
+                return result;
+            }
+            else
+            {
+
+                return name;
+            }
+        }
+        private static Track CreateTrackFromFileInfo(FileInfo file)
+        {
+            var track = new Track();
+            var tfile = TagLib.File.Create(file.FullName);
+            string title = tfile.Tag.Title;
+            string album = tfile.Tag.Album;
+            uint year = tfile.Tag.Year;
+            string[] perf = tfile.Tag.Performers;
+            if (title != null)
+            { track.Title = title; }
+            else { track.Title = Path.GetFileNameWithoutExtension(file.FullName); }
+            if (album != null) track.Album = album;
+            if (year != 0) track.Year = year.ToString();
+            if (perf.Length > 0) track.Artist = perf[0];
+            track.TrackId = Manager.GetRandomTrackId(Manager.pathDestination);
+            return track;
         }
 
     }

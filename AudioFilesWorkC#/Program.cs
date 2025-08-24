@@ -13,28 +13,25 @@ namespace AudioFilesWorkC_
     {
         static void Main(string[] args)
         {
-            var tracks = Manager.GetDifferentTracks();
-            Manager.CopyInsertDataToDestination(tracks.ToArray());
+            //var tracks = Manager.GetDifferentTracks();
+            //Manager.CopyInsertDataToDestination(tracks.ToArray());
             //Test();
+            TestTabLib();
         }
 
 
 
 
-        //static void TestTabLib()
-        //{
-        //    var tfile = TagLib.File.Create(@"D:\test\All That She Wants.mp3");
-        //    string title = tfile.Tag.Title;
-        //    string album = tfile.Tag.Album;
-        //    var gg = tfile.Tag.Year;
-        //    Console.WriteLine(gg);
-        //    //tfile.Tag.TrackCount = 1721;
-        //    //tfile.Save();
-        //    Console.WriteLine(tfile.Tag.TrackCount);
-        //    Console.WriteLine(tfile.Tag.Year);
-        //    TimeSpan duration = tfile.Properties.Duration;
-        //    Console.WriteLine("Title: {0}, duration: {1}", title, duration);
-        //}
+        static void TestTabLib()
+        {
+            var file = new FileInfo(@"D:\other\Гела Чёрный   Твои глаза.mp3");
+            //CreateTrackFromFileInfo(file);
+
+
+
+
+        }
+
 
         //static string TestRegex(string word)
         //{
@@ -65,10 +62,11 @@ namespace AudioFilesWorkC_
             //{"str9", "SELECT Year FROM T_Album WHERE Id = @value" },
             {"str_create", "CREATE TABLE T_Trask_Yandex (Id  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE  NOT NULL, Title  VARCHAR, Artist  VARCHAR, Album VARCHAR, Year VARCHAR, TrackId  VARCHAR, ArtistId  VARCHAR, NameArtist   VARCHAR, Data  VARCHAR , Sours VARCHAR DEFAULT ('Yandex'));" },
             {"str_insert","INSERT INTO T_Trask_Yandex (Title, Artist,Album, Year, TrackId, ArtistId, NameArtist, Data)  VALUES (@title, @artist,@album, @year, @track_id, @artist_id, @name_artist, @data)" },
-             { "str12", "SELECT  TrackId FROM T_Trask_Yandex WHERE Sours = @value" }
+             { "str12", "SELECT  TrackId FROM T_Trask_Yandex WHERE Sours = @value" },
+             { "str13", "SELECT TrackId FROM T_Trask_Yandex" }
             };
 
-            string? sours_db = @"D:\testlib";
+            string? sours_db = @"D:\test";
             string _sours_db = Path.Combine(sours_db, DbSqlite.NameMyDB);
             string sql_conn = DbSqlite.Get_str_connection(_sours_db);
             //DbSqlite.ExecuteNonQuery(sql_conn, dic["str_create"]);
@@ -80,10 +78,16 @@ namespace AudioFilesWorkC_
             //}
             //string path = DbSqlite.GetPathDbSqliteDestination();
             //string str_connection = DbSqlite.Get_str_connection(path);
-            List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "Yandex" } });
-            var list_trackId_destination = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str12"], com_params);
-            Manager.Display(list_trackId_destination);
+            //List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "Yandex" } });
+            var list_trackId_destination = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str13"]);
+            //Manager.Display(list_trackId_destination);
+            string trackId = "-1";
+            do
+            {
+                trackId = new Random().Next().ToString();
 
+            } while (list_trackId_destination.Contains(trackId));
+            Console.WriteLine(trackId);
 
 
 
