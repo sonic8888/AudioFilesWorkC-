@@ -331,6 +331,7 @@ namespace AudioFilesWorkC_
             if (year != 0) track.Year = year.ToString();
             if (perf.Length > 0) track.Artist = perf[0];
             track.TrackId = Manager.GetRandomTrackId(Manager.pathDestination);
+            track.Extension = file.Extension;
             return track;
         }
 
