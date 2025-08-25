@@ -37,7 +37,7 @@ namespace AudioFilesWorkC_
 
         public override string ToString()
         {
-            return $"Name:{Title}, Artist:{Artist}, Album:{Album}, Year:{Year}, TrackId:{TrackId})";
+            return $"Name:{Name}, Title:{Title}, Artist:{Artist}, Album:{Album}, Year:{Year}, TrackId:{TrackId})";
         }
 
         public override bool Equals(object? obj)

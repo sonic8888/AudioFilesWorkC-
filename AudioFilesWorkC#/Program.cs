@@ -13,10 +13,13 @@ namespace AudioFilesWorkC_
     {
         static void Main(string[] args)
         {
+            //string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
             //var tracks = Manager.GetDifferentTracks();
-            //Manager.CopyInsertDataToDestination(tracks.ToArray());
+          
+            //Manager.CopyInsertDataFromYandexAppToDestination(tracks.ToArray());
             //Test();
-            TestTabLib();
+            //TestTabLib();
+            AddNewFiles(@"D:\other");
         }
 
 
@@ -94,7 +97,33 @@ namespace AudioFilesWorkC_
 
         }
 
+        static void AddNewFiles(string pathDir)
+        {
+            if (!Directory.Exists(pathDir)) throw new ArgumentException($"папка: {pathDir} - не найдена.");
+            var files = new DirectoryInfo(pathDir).GetFiles();
+            YandexMusic.PathCopyTo = Manager.pathDestination;
+            string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
+            foreach (var item in files)
+            {
+                if (Manager.IsAudio(item))
+                {
+                    Track track = Manager.CreateTrackFromFileInfo(item);
+                    int rows = Manager.InsertData(track, pathDbDestination, "Other");
 
+                    bool isCopy = Manager.Copy(track, item, YandexMusic.PathCopyTo);
+                    if (!isCopy)// если копирование не удалось то удаляем из БД
+                    {
+                        Manager.DisplayColor($"DELETE: rows:{rows}, track:{track}", ConsoleColor.Red);
+                        DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination),
+                DbSqlite.Dictionary_query["del"], DbSqlite.Get_list_params(new Dictionary<string, string?>() { { "@value", rows.ToString() } }));
+                    }
+
+
+
+
+                }
+            }
+        }
 
 
 

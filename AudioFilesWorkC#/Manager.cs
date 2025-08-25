@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using TagLib.Ape;
 using TagLib.Matroska;
 
 namespace AudioFilesWorkC_
@@ -93,7 +94,7 @@ namespace AudioFilesWorkC_
                 DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], ("TrackId", "GetString"), tracks, com_params);
                 foreach (var item in tracks)
                 {
-                    TrackContent(item, sql_conn);
+                    TrackContentFromYAndexApp(item, sql_conn);
                 }
             }
             return tracks;
@@ -133,7 +134,7 @@ namespace AudioFilesWorkC_
         /// и копируем файлы в папку 
         /// </summary>
         /// <param name="tracks">содержит данные о треке</param>
-        public static void CopyInsertDataToDestination(Track[] tracks)
+        public static void CopyInsertDataFromYandexAppToDestination(Track[] tracks)
         {
             YandexMusic.PathCopyTo = Manager.pathDestination;
             string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
@@ -167,18 +168,20 @@ namespace AudioFilesWorkC_
         /// <param name="track">Track</param>
         /// <param name="pathDbDestination">путь к папке назначения</param>
         /// <returns>номер строки в БД или -1</returns>
-        public static int InsertData(Track track, string pathDbDestination)
+        public static int InsertData(Track track, string pathDbDestination, string sours = "Yandex")
         {
             int rows = -1;
             try
             {
                 var dicParam = new Dictionary<string, string?>();
+                dicParam.Add("@name", track.Name + track.Extension);
                 dicParam.Add("@title", track.Title);
                 dicParam.Add("@artist", track.Artist ?? "unknown");
                 dicParam.Add("@album", track.Album ?? "unknown");
                 dicParam.Add("@year", track.Year ?? "unknown");
                 dicParam.Add("@track_id", track.TrackId);
                 dicParam.Add("@data", Track.Data());
+                dicParam.Add("@sours", sours);
                 var comParams = DbSqlite.Get_list_params(dicParam);
                 var r = DbSqlite.ExecuteScalar(DbSqlite.Get_str_connection(pathDbDestination), DbSqlite.Dictionary_query["str_insert"], comParams);
                 rows = Convert.ToInt32(r);
@@ -262,13 +265,13 @@ namespace AudioFilesWorkC_
             foreach (var item in list_trackId_yandex)
             {
                 Track track = new Track() { TrackId = item };
-                TrackContent(track, sql_conn);
+                TrackContentFromYAndexApp(track, sql_conn);
                 list.Add(track);
             }
             return list;
         }
 
-        private static void TrackContent(Track item, string sql_conn)
+        private static void TrackContentFromYAndexApp(Track item, string sql_conn)
         {
             try
             {
@@ -316,7 +319,7 @@ namespace AudioFilesWorkC_
                 return name;
             }
         }
-        private static Track CreateTrackFromFileInfo(FileInfo file)
+        public static Track CreateTrackFromFileInfo(FileInfo file)
         {
             var track = new Track();
             var tfile = TagLib.File.Create(file.FullName);
@@ -332,7 +335,41 @@ namespace AudioFilesWorkC_
             if (perf.Length > 0) track.Artist = perf[0];
             track.TrackId = Manager.GetRandomTrackId(Manager.pathDestination);
             track.Extension = file.Extension;
+            track.Name = file.Name;
             return track;
+        }
+
+        public static bool IsAudio(FileInfo file)
+        {
+            if (file == null) return false;
+            if (file.Extension.ToLower() == ".mp3" || file.Extension.ToLower() == ".flack" || file.Extension.ToLower() == ".wav") { return true; } else return false;
+        }
+
+        public static bool Copy(Track track, FileInfo sours, string PathToDir)
+        {
+            bool isCopy = false;
+            var file_destination = new FileInfo(Path.Combine(PathToDir, sours.Name));
+            if (!file_destination.Exists)
+            {
+                try
+                {
+                    sours.CopyTo(file_destination.FullName);
+                    isCopy = true;
+                }
+                catch (Exception ex)
+                {
+                    Manager.DisplayColor($"Файл:{sours.Name} - скопировать не удалось. Exception: {ex.Message}", ConsoleColor.Red);
+                }
+            }
+            return isCopy;
+        }
+
+        private static string FirstCharToUp(string str)
+        {
+            char[] chars = str.ToCharArray();
+            char first = chars[0];
+            chars[0] = char.ToUpper(first);
+            return new string(chars);
         }
 
     }
