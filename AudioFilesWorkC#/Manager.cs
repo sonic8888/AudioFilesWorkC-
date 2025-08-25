@@ -302,7 +302,7 @@ namespace AudioFilesWorkC_
                 trackId = new Random().Next().ToString();
 
             } while (list_trackId_destination.Contains(trackId));
-            return trackId;
+            return "-" + trackId;
         }
 
         public static string NormalizeName(string? name)
