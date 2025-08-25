@@ -296,13 +296,13 @@ namespace AudioFilesWorkC_
             string _sours_db = Path.Combine(pathDirDestination, DbSqlite.NameMyDB);
             string sql_conn = DbSqlite.Get_str_connection(_sours_db);
             var list_trackId_destination = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str13"]);
-            string trackId = "-1";
+            int trackId = -1;
             do
             {
-                trackId = new Random().Next().ToString();
+                trackId = new Random().Next() * -1;
 
-            } while (list_trackId_destination.Contains(trackId));
-            return "-" + trackId;
+            } while (list_trackId_destination.Contains(trackId.ToString()));
+            return trackId.ToString();
         }
 
         public static string NormalizeName(string? name)
