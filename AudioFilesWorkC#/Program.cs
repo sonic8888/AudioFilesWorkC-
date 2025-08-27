@@ -13,10 +13,11 @@ namespace AudioFilesWorkC_
     {
         static void Main(string[] args)
         {
-            //string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
-            //var tracks = Manager.GetDifferentTracks();
-          
-            //Manager.CopyInsertDataFromYandexAppToDestination(tracks.ToArray());
+            Massage();
+            string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
+            var tracks = Manager.GetDifferentTracks();
+
+            Manager.CopyInsertDataFromYandexAppToDestination(tracks.ToArray());
             //Test();
             //TestTabLib();
             AddNewFiles(@"D:\other");
@@ -117,12 +118,20 @@ namespace AudioFilesWorkC_
                         DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination),
                 DbSqlite.Dictionary_query["del"], DbSqlite.Get_list_params(new Dictionary<string, string?>() { { "@value", rows.ToString() } }));
                     }
-
-
-
-
+                    else
+                    {
+                        Manager.DisplayColor(item.Name);
+                    }
                 }
             }
+        }
+
+        static void Massage()
+        {
+            Console.WriteLine("Укажите путь к папке:");
+            string? path = Console.ReadLine();
+            string path_path = Path.GetFullPath(path!);
+            Manager.pathDestination = path_path;
         }
 
 

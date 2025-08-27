@@ -30,7 +30,7 @@ namespace AudioFilesWorkC_
             { "str13", "SELECT TrackId FROM T_Trask_Yandex" }
         };
 
-        public static string PathCopyTo = @"D:\test";
+        public static string PathCopyTo = Manager.pathDestination;
         public static string NameMyDB = "my_music.sqlite";
         public static string Get_str_connection(string? data_sours, string mode = "ReadWriteCreate", Dictionary<string, string>? params_com = null)
         {

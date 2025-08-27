@@ -155,6 +155,7 @@ namespace AudioFilesWorkC_
                     else
                     {
                         CreateTags(item, Manager.pathDestination);
+                        Manager.DisplayColor(item.Name);
                     }
 
                 }
