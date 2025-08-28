@@ -10,9 +10,6 @@ namespace AudioFilesWorkC_
     internal class Track : IComparable
     {
         private string title = "unknown";
-        //private static string pattern = @"[\*\|\\\:\""<>\?\/]";
-        //private static Regex regex = new Regex(Manager.Pattern);
-        //private static string target = ".";
         public string Extension { get; set; } = ".mp3";
 
         public string Name { get; set; } = "";
@@ -57,20 +54,7 @@ namespace AudioFilesWorkC_
         {
             return TrackId.GetHashCode();
         }
-        //private static string NormalizeName(string? name)
-        //{
-        //    if (name == null) return "";
-        //    if (regex.IsMatch(name))
-        //    {
-        //        string result = regex.Replace(name, Manager.Target);
-        //        return result;
-        //    }
-        //    else
-        //    {
 
-        //        return name;
-        //    }
-        //}
 
         public int CompareTo(object? obj)
         {

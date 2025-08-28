@@ -14,7 +14,7 @@ namespace AudioFilesWorkC_
         static void Main(string[] args)
         {
             Massage();
-            string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
+            //string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
             var tracks = Manager.GetDifferentTracks();
 
             Manager.CopyInsertDataFromYandexAppToDestination(tracks.ToArray());

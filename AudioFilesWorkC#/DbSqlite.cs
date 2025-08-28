@@ -10,7 +10,9 @@ namespace AudioFilesWorkC_
 {
     internal static class DbSqlite
     {
-        public static string[] values = new string[] { "5" };
+        /// <summary>
+        /// Словарь содержащий SQL запросы.
+        /// </summary>
         public static Dictionary<string, string> Dictionary_query = new Dictionary<string, string>()
         {
             {"str1","SELECT Count(TrackId) FROM T_PlaylistTrack WHERE Kind = @value;" },
@@ -30,8 +32,15 @@ namespace AudioFilesWorkC_
             { "str13", "SELECT TrackId FROM T_Trask_Yandex" }
         };
 
-        public static string PathCopyTo = Manager.pathDestination;
+        private static string PathCopyTo = Manager.pathDestination;
         public static string NameMyDB = "my_music.sqlite";
+        /// <summary>
+        /// Создает строку подключения к БД
+        /// </summary>
+        /// <param name="data_sours">Абсолютный путь к БД</param>
+        /// <param name="mode">Режим подключения к БД(ReadWriteCreate-по умолчанию)</param>
+        /// <param name="params_com">Словарь с дополнительными параметрами подключения(null-по умолчанию)</param>
+        /// <returns>Строка поключения</returns>
         public static string Get_str_connection(string? data_sours, string mode = "ReadWriteCreate", Dictionary<string, string>? params_com = null)
         {
             string str = $"Data Source={data_sours};Mode={mode};";
@@ -46,6 +55,14 @@ namespace AudioFilesWorkC_
             return str;
         }
 
+        /// <summary>
+        /// Выполняет запрос к БД и возвращает одно скалярное значение.
+        /// (возвращает количество треков в папке "Яндекс Музыка").
+        /// </summary>
+        /// <param name="str_connection">Строка подключения</param>
+        /// <param name="sqlExpression">SQL запрос к БД.</param>
+        /// <param name="sql_params">Параметры SQL запроса.</param>
+        /// <returns>объект класса "Object?"</returns>
         public static object? ExecuteScalar(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
         {
             object? val = 0;
@@ -65,13 +82,12 @@ namespace AudioFilesWorkC_
             return val;
         }
 
-        public static SqliteParameter Get_sql_params(string name, int value)
-        {
-            SqliteParameter par = new SqliteParameter(name, value);
-            return par;
-
-        }
-
+        /// <summary>
+        /// Создает объект "SqliteParameter". 
+        /// </summary>
+        /// <param name="name">Имя параметра запроса</param>
+        /// <param name="value">Значение параметра запроса</param>
+        /// <returns> SqliteParameter</returns>
         public static SqliteParameter Get_sql_params(string name, string? value)
         {
 
@@ -81,6 +97,11 @@ namespace AudioFilesWorkC_
 
         }
 
+        /// <summary>
+        /// Создает список параметров запроса.
+        /// </summary>
+        /// <param name="param_val">Словарь содержащий название параметра и его значение.</param>
+        /// <returns>Список парамеров запроса.</returns>
         public static List<SqliteParameter> Get_list_params(Dictionary<string, string?> param_val)
         {
             List<SqliteParameter> sqliteParameters = new List<SqliteParameter>();
@@ -91,41 +112,13 @@ namespace AudioFilesWorkC_
             return sqliteParameters;
         }
 
-        public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method, Track[] tracks, List<SqliteParameter>? sql_params = null)
-        {
-            using (var connection = new SqliteConnection(str_connection))
-            {
-                connection.Open();
-                SqliteCommand command = new SqliteCommand(sqlExpression, connection);
-                if (sql_params != null)
-                {
-                    foreach (var item in sql_params)
-                    {
-                        command.Parameters.Add(item);
-                    }
-                }
-                using (SqliteDataReader reader = command.ExecuteReader())
-                {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        int n = 0;
-                        var type_track = typeof(Track);
-                        var property_track = type_track.GetProperty(property_method.Item1);
-                        var type_reader = reader.GetType();
-                        var method_reader = type_reader.GetMethod(property_method.Item2);
-                        while (reader.Read())   // построчно считываем данные
-                        {
-                            Track track = tracks[n++];
-                            var res = method_reader?.Invoke(reader, parameters: new object[] { 0 });
-                            property_track?.SetValue(track, res);
-
-
-                        }
-                    }
-                }
-
-            }
-        }
+        /// <summary>
+        /// Извлекает данные из БД(SELECT).
+        /// </summary>
+        /// <param name="str_connection">Строка подключения к БД.</param>
+        /// <param name="sqlExpression">SQL запрос к БД.</param>
+        /// <param name="sql_params">Список содержащий параметры запроса и их значений.</param>
+        /// <returns>Список содержащий результаты запроса к БД.</returns>
         public static List<string> ExecuteReader(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
         {
             List<string> list_data = new List<string>();
@@ -140,24 +133,38 @@ namespace AudioFilesWorkC_
                         command.Parameters.Add(item);
                     }
                 }
-                using (SqliteDataReader reader = command.ExecuteReader())
+                try
                 {
-                    if (reader.HasRows) // если есть данные
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        while (reader.Read())
+                        if (reader.HasRows) // если есть данные
                         {
-                            var result = reader.GetString(0);
-                            list_data.Add(result);
+                            while (reader.Read())
+                            {
+                                var result = reader.GetString(0);
+                                list_data.Add(result);
+                            }
                         }
                     }
                 }
+                catch (SqliteException se)
+                {
+
+                    Manager.DisplayColor(se.Message, ConsoleColor.Red);
+                }
+
             }
             return list_data;
         }
 
-
-
-
+        /// <summary>
+        /// Извлекает данные из БД(SELECT).
+        /// </summary>
+        /// <param name="str_connection">Строка подключения к БД.</param>
+        /// <param name="sqlExpression">SQL запрос к БД.</param>
+        /// <param name="property_method">Кортеж содержащий название свойства класса "Track" и название метода класса "SqliteDataReader"</param>
+        /// <param name="track">Объект класса "Track"/</param>
+        /// <param name="sql_params">Список содержащий параметры запроса БД и их значений.</param>
         public static void ExecuteReader(string str_connection, string sqlExpression, (string, string) property_method, Track track, List<SqliteParameter>? sql_params = null)
         {
             using (var connection = new SqliteConnection(str_connection))
@@ -193,6 +200,14 @@ namespace AudioFilesWorkC_
             }
         }
 
+        /// <summary>
+        /// Извлекает данные из БД(SELECT).
+        /// </summary>
+        /// <param name="str_connection">Строка подключения к БД.</param>
+        /// <param name="sqlExpression">SQL запрос к БД.</param>
+        /// <param name="property_method">Массив кортежей содержащих название свойства класса "Track" и название метода класса "SqliteDataReader"</param>
+        /// <param name="track">Объект класса "Track"</param>
+        /// <param name="sql_params">Список содержащий параметры запроса БД и их значений</param>
         public static void ExecuteReader(string str_connection, string sqlExpression, (string, string)[] property_method, Track track, List<SqliteParameter>? sql_params = null)
         {
             using (var connection = new SqliteConnection(str_connection))
@@ -237,6 +252,13 @@ namespace AudioFilesWorkC_
             }
         }
 
+        /// <summary>
+        /// Выполняет запрос к БД(INSERT, UPDATE, DELETE, CREATE).
+        /// </summary>
+        /// <param name="str_connection">Строка подключения к БД.</param>
+        /// <param name="sqlExpression">SQL запрос к БД.</param>
+        /// <param name="sql_params">Список содержащий параметры запроса БД и их значений</param>
+        /// <returns>Число сток (INSERT, UPDATE, DELETE)</returns>
         public static int ExecuteNonQuery(string str_connection, string sqlExpression, List<SqliteParameter>? sql_params = null)
         {
             int rows = -1;

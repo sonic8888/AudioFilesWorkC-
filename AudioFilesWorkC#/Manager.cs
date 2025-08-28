@@ -71,35 +71,13 @@ namespace AudioFilesWorkC_
         }
 
 
+
+
         /// <summary>
-        /// выбирает информацию о треках в корневой папке "Яндекс Музыка".
+        /// Создаем теги аудиофайла скопированного  в папку(pathDestination) из данных извлеченных из объекта класса "Track". 
         /// </summary>
-        /// <returns>массив Track[]</returns>
-        public static Track[] GetDataFromYandexDB()
-        {
-            Track[] tracks = new Track[0];
-            string? sours_db = YandexMusic.PathDBSqlite;
-            string sql_conn = DbSqlite.Get_str_connection(sours_db);
-            List<SqliteParameter> com_params = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
-            object? res = DbSqlite.ExecuteScalar(sql_conn, DbSqlite.Dictionary_query["str1"], com_params);
-
-            if (res != null)
-            {
-                int result = Convert.ToInt32(res);
-                tracks = new Track[result];
-                for (int i = 0; i < tracks.Length; i++)
-                {
-                    tracks[i] = new Track();
-                }
-                DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], ("TrackId", "GetString"), tracks, com_params);
-                foreach (var item in tracks)
-                {
-                    TrackContentFromYAndexApp(item, sql_conn);
-                }
-            }
-            return tracks;
-        }
-
+        /// <param name="track">Объект класса "Track".</param>
+        /// <param name="path_dir">Путь к папке с аудиофайлами(pathDestination )</param>
         private static void CreateTags(Track track, string path_dir)
         {
             try
@@ -150,14 +128,12 @@ namespace AudioFilesWorkC_
                         Manager.DisplayColor($"DELETE: rows:{rows}, track:{item}", ConsoleColor.Red);
                         DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination),
                 DbSqlite.Dictionary_query["del"], DbSqlite.Get_list_params(new Dictionary<string, string?>() { { "@value", rows.ToString() } }));
-                        continue;
                     }
                     else
                     {
                         CreateTags(item, Manager.pathDestination);
                         Manager.DisplayColor(item.Name);
                     }
-
                 }
             }
         }
@@ -198,6 +174,11 @@ namespace AudioFilesWorkC_
 
 
 
+        /// <summary>
+        /// Выводит на консоль текст разными цветами.
+        /// </summary>
+        /// <param name="message">Текст</param>
+        /// <param name="color">ConsoleColor color</param>
         public static void DisplayColor(string message, System.ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
@@ -219,41 +200,26 @@ namespace AudioFilesWorkC_
 
 
 
-        private static List<string> GetProperty(Track[] track, string nameProperty, bool isAddExtension = true)
-        {
-            Type track_type = typeof(Track);
-            var property = track_type.GetProperty(nameProperty);
-            if (property == null) throw new ArgumentNullException(nameof(property));
-            var propertys = new List<string>();
-            foreach (var item in track)
-            {
-                var value = property.GetValue(item);
-                if (value == null) continue;
-                string value_property = "";
-                if (isAddExtension)
-                {
-                    value_property = value.ToString()! + item.Extension;
-                }
-                else
-                {
-                    value_property = value.ToString()!;
-                }
-                propertys.Add(value_property);
-            }
-            return propertys;
-        }
 
+        /// <summary>
+        /// Находим разницу треков между БД((pathDestination) и БД("ЯНДЕКС МУЗЫКА").
+        /// </summary>
+        /// <returns>Список содержащий разницу треков</returns>
         public static List<Track> GetDifferentTracks()
         {
+            // извлекаем данные из БД находящийся в папке(pathDestination).
             string path = DbSqlite.GetPathDbSqliteDestination();
             string str_connection = DbSqlite.Get_str_connection(path);
             List<SqliteParameter> com_params_destination = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "Yandex" } });
             var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"], com_params_destination);
 
+            // извлекаем данные из БД находящийся в корневой папке "ЯНДЕКС МУЗЫКА".
             string? sours_db = YandexMusic.PathDBSqlite;
             string sql_conn = DbSqlite.Get_str_connection(sours_db);
             List<SqliteParameter> com_params_yandex = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
             var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params_yandex);
+
+            //Находим разницу данных между БД(pathDestination) и БД("ЯНДЕКС МУЗЫКА").
             foreach (var item in list_trackId_destination)
             {
                 if (list_trackId_yandex.Contains(item))
@@ -261,7 +227,7 @@ namespace AudioFilesWorkC_
                     list_trackId_yandex.Remove(item);
                 }
             }
-            //Manager.Display(list_trackId_yandex);
+            // Разницу в данных помещаем в список.
             List<Track> list = new List<Track>();
             foreach (var item in list_trackId_yandex)
             {
@@ -272,6 +238,11 @@ namespace AudioFilesWorkC_
             return list;
         }
 
+        /// <summary>
+        /// Заполняет пустой объект класса "Track" данными считаными из 
+        /// </summary>
+        /// <param name="item">Объект класса "Track"</param>
+        /// <param name="sql_conn">Строка подключения к БД</param>
         private static void TrackContentFromYAndexApp(Track item, string sql_conn)
         {
             try
@@ -286,12 +257,17 @@ namespace AudioFilesWorkC_
             catch (Exception ex)
             {
                 item.Name = item.Title;
-                Console.WriteLine(item);
+                DisplayColor(item.ToString());
                 DisplayColor(ex.Message, ConsoleColor.DarkYellow);
             }
         }
 
 
+        /// <summary>
+        /// Создает "случайный" trackId и проверяет уникальность в БД(pathDestination).
+        /// </summary>
+        /// <param name="pathDirDestination"></param>
+        /// <returns></returns>
         private static string GetRandomTrackId(string pathDirDestination)
         {
             string _sours_db = Path.Combine(pathDirDestination, DbSqlite.NameMyDB);
@@ -306,6 +282,11 @@ namespace AudioFilesWorkC_
             return trackId.ToString();
         }
 
+        /// <summary>
+        /// Заменяет недопустимые символы в имени файла(Manager.Target = "."). 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static string NormalizeName(string? name)
         {
             if (name == null) return "";
@@ -320,6 +301,12 @@ namespace AudioFilesWorkC_
                 return name;
             }
         }
+        /// <summary>
+        /// Создает объект класса "Track" из аудиофайла.
+        /// Извлекает теги аудиофайла и записывает их значение в свойства объекта класса "Track".
+        /// </summary>
+        /// <param name="file">Объект класса "FileInfo"(аудиофайл)</param>
+        /// <returns>Track</returns>
         public static Track CreateTrackFromFileInfo(FileInfo file)
         {
             var track = new Track();
@@ -340,13 +327,24 @@ namespace AudioFilesWorkC_
             return track;
         }
 
+        /// <summary>
+        /// Возвращает "true" если расширение файла - ".mp3",".flack" или ".wav".
+        /// </summary>
+        /// <param name="file">аудиофайл</param>
+        /// <returns>bool</returns>
         public static bool IsAudio(FileInfo file)
         {
             if (file == null) return false;
             if (file.Extension.ToLower() == ".mp3" || file.Extension.ToLower() == ".flack" || file.Extension.ToLower() == ".wav") { return true; } else return false;
         }
 
-        public static bool Copy(Track track, FileInfo sours, string PathToDir)
+        /// <summary>
+        /// Копирует файл.
+        /// </summary>
+        /// <param name="sours">аудиофайл</param>
+        /// <param name="PathToDir">папка назначения</param>
+        /// <returns>True если копирование прошло удачно.</returns>
+        public static bool Copy(FileInfo sours, string PathToDir)
         {
             bool isCopy = false;
             var file_destination = new FileInfo(Path.Combine(PathToDir, sours.Name));
@@ -365,12 +363,41 @@ namespace AudioFilesWorkC_
             return isCopy;
         }
 
-        private static string FirstCharToUp(string str)
+
+
+        /// <summary>
+        /// Добавляет аудиофайлу в папку (pathDestination):
+        /// Создает объект класса "Track", записывает его в БД(pathDestination),
+        /// Копирует аудиофайл в папку (pathDestination).
+        /// </summary>
+        /// <param name="pathDir"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public static void AddNewFiles(string pathDir)
         {
-            char[] chars = str.ToCharArray();
-            char first = chars[0];
-            chars[0] = char.ToUpper(first);
-            return new string(chars);
+            if (!Directory.Exists(pathDir)) throw new ArgumentException($"папка: {pathDir} - не найдена.");
+            var files = new DirectoryInfo(pathDir).GetFiles();
+            YandexMusic.PathCopyTo = Manager.pathDestination;
+            string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
+            foreach (var item in files)
+            {
+                if (Manager.IsAudio(item))
+                {
+                    Track track = Manager.CreateTrackFromFileInfo(item);
+                    int rows = Manager.InsertData(track, pathDbDestination, "Other");
+
+                    bool isCopy = Manager.Copy(item, YandexMusic.PathCopyTo);
+                    if (!isCopy)// если копирование не удалось то удаляем из БД
+                    {
+                        Manager.DisplayColor($"DELETE: rows:{rows}, track:{track}", ConsoleColor.Red);
+                        DbSqlite.ExecuteNonQuery(DbSqlite.Get_str_connection(pathDbDestination),
+                DbSqlite.Dictionary_query["del"], DbSqlite.Get_list_params(new Dictionary<string, string?>() { { "@value", rows.ToString() } }));
+                    }
+                    else
+                    {
+                        Manager.DisplayColor(item.Name);
+                    }
+                }
+            }
         }
 
     }
