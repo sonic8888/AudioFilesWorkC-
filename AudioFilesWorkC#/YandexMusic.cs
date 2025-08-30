@@ -220,44 +220,44 @@ namespace AudioFilesWorkC_
         }
 
 
-        public static FileInfo CopyFromTo(Track track, string? sours, string destination, out bool isException, bool isRename = true, bool isOverwrite = true)
-        {
-            isException = true;
-            if (!Path.Exists(destination)) throw new ArgumentException($"Path:{destination} - There is no such way.");
-            string _sours = Path.Combine(sours!, track.Name + track.Extension);
-            string _destination = "";
-            if (isRename)
-                _destination = Path.Combine(destination, GetName(track));
-            else
-                _destination = Path.Combine(destination, track.Name + track.Extension);
-            FileInfo file = new FileInfo(_sours);
+        //public static FileInfo CopyFromTo(Track track, string? sours, string destination, out bool isException, bool isRename = true, bool isOverwrite = true)
+        //{
+        //    isException = true;
+        //    if (!Path.Exists(destination)) throw new ArgumentException($"Path:{destination} - There is no such way.");
+        //    string _sours = Path.Combine(sours!, track.Name + track.Extension);
+        //    string _destination = "";
+        //    if (isRename)
+        //        _destination = Path.Combine(destination, GetName(track));
+        //    else
+        //        _destination = Path.Combine(destination, track.Name + track.Extension);
+        //    FileInfo file = new FileInfo(_sours);
 
-            try
-            {
-                if (file.Exists)
-                { file = file.CopyTo(_destination, isOverwrite); }
-                else
-                    throw new ArgumentException($"Path:{_destination} - there is no such file");
-            }
-            catch (IOException)
-            {
-                if (isOverwrite)
-                {
-                    Manager.DisplayColor($"Трек '{track}' уже существует. Перезаписываем его.", ConsoleColor.Green);
-                }
-                else { Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Green); }
+        //    try
+        //    {
+        //        if (file.Exists)
+        //        { file = file.CopyTo(_destination, isOverwrite); }
+        //        else
+        //            throw new ArgumentException($"Path:{_destination} - there is no such file");
+        //    }
+        //    catch (IOException)
+        //    {
+        //        if (isOverwrite)
+        //        {
+        //            Manager.DisplayColor($"Трек '{track}' уже существует. Перезаписываем его.", ConsoleColor.Green);
+        //        }
+        //        else { Manager.DisplayColor($"Трек '{track}' уже существует. Не перезаписываем его.", ConsoleColor.Green); }
 
-                isException = false;
-            }
-            catch (Exception ex)
-            {
+        //        isException = false;
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-                Manager.DisplayColor(ex.Message, ConsoleColor.Blue);
-                isException = false;
-            }
-            return file;
+        //        Manager.DisplayColor(ex.Message, ConsoleColor.Blue);
+        //        isException = false;
+        //    }
+        //    return file;
 
-        }
+        //}
 
 
 

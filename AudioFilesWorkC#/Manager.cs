@@ -18,7 +18,7 @@ namespace AudioFilesWorkC_
         /// Путь к папке в которой находятся а-файлы и БД.
         /// </summary>
         public static string pathDestination = @"D:\test";
-        public static string? pathFrom = @"D:\music\test";
+        public static string Kind = "5";
         private static string Pattern = @"[\*\|\\\:\""<>\?\/]";
         private static string Target = ".";
         private static Regex regex = new Regex(Manager.Pattern);
@@ -186,6 +186,11 @@ namespace AudioFilesWorkC_
             Console.ResetColor();
         }
 
+        /// <summary>
+        /// Выводит на консоль элементы последовательности.
+        /// </summary>
+        /// <typeparam name="T">Тип элемента</typeparam>
+        /// <param name="enumerable">Последовательность</param>
         public static void Display<T>(IEnumerable<T> enumerable)
         {
             foreach (T item in enumerable)
@@ -208,16 +213,12 @@ namespace AudioFilesWorkC_
         public static List<Track> GetDifferentTracks()
         {
             // извлекаем данные из БД находящийся в папке(pathDestination).
-            string path = DbSqlite.GetPathDbSqliteDestination();
-            string str_connection = DbSqlite.Get_str_connection(path);
-            List<SqliteParameter> com_params_destination = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "Yandex" } });
-            var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"], com_params_destination);
+            var list_trackId_destination = GetDataFromDestinationDB();
 
             // извлекаем данные из БД находящийся в корневой папке "ЯНДЕКС МУЗЫКА".
             string? sours_db = YandexMusic.PathDBSqlite;
             string sql_conn = DbSqlite.Get_str_connection(sours_db);
-            List<SqliteParameter> com_params_yandex = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "5" } });
-            var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params_yandex);
+            var list_trackId_yandex = GetDataFromYandex(sql_conn);
 
             //Находим разницу данных между БД(pathDestination) и БД("ЯНДЕКС МУЗЫКА").
             foreach (var item in list_trackId_destination)
@@ -236,6 +237,33 @@ namespace AudioFilesWorkC_
                 list.Add(track);
             }
             return list;
+        }
+
+        /// <summary>
+        /// Извлекаем данные из БД находящийся в папке(pathDestination).
+        /// </summary>
+        /// <returns>Список TrackId</returns>
+        private static List<string> GetDataFromDestinationDB()
+        {
+            // извлекаем данные из БД находящийся в папке(pathDestination).
+            string path = DbSqlite.GetPathDbSqliteDestination();
+            string str_connection = DbSqlite.Get_str_connection(path);
+            List<SqliteParameter> com_params_destination = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", "Yandex" } });
+            var list_trackId_destination = DbSqlite.ExecuteReader(str_connection, DbSqlite.Dictionary_query["str12"], com_params_destination);
+            return list_trackId_destination;
+        }
+
+        /// <summary>
+        /// Извлекаем данные из БД находящийся в корневой папке "ЯНДЕКС МУЗЫКА".
+        /// </summary>
+        /// <param name="sql_conn">Строка подключения к БД(ЯндексМузыка)</param>
+        /// <returns>Список TrackId</returns>
+        private static List<string> GetDataFromYandex(string sql_conn)
+        {
+            // извлекаем данные из БД находящийся в корневой папке "ЯНДЕКС МУЗЫКА".
+            List<SqliteParameter> com_params_yandex = DbSqlite.Get_list_params(new Dictionary<string, string?> { { "value", Manager.Kind } });
+            var list_trackId_yandex = DbSqlite.ExecuteReader(sql_conn, DbSqlite.Dictionary_query["str2"], com_params_yandex);
+            return list_trackId_yandex;
         }
 
         /// <summary>
@@ -398,6 +426,25 @@ namespace AudioFilesWorkC_
                     }
                 }
             }
+        }
+
+
+        async public static Task AddFilesFromYandexMusic()
+        {
+            Task<List<Track>> task_tracks = new Task<List<Track>>(() => Manager.GetDifferentTracks());
+            task_tracks.Start();
+            List<Track> list = task_tracks.Result;
+            await task_tracks;
+            Task task_copy = new Task(() => Manager.CopyInsertDataFromYandexAppToDestination(list.ToArray()));
+            task_copy.Start();
+            await task_copy;
+
+        }
+
+        async public static Task AddNewFilesToDestination(string pathDir)
+        {
+            Task task_add = Task.Run(() => AddNewFiles(pathDir));
+            await task_add;
         }
 
     }
