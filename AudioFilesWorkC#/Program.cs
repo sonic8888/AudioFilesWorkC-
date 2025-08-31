@@ -13,14 +13,15 @@ namespace AudioFilesWorkC_
     {
         static void Main(string[] args)
         {
-            //Massage();
-            string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
-            Task task = Manager.AddFilesFromYandexMusic();
-            task.Wait();
+            ////Massage();
+            //string pathDbDestination = DbSqlite.GetPathDbSqliteDestination();
+            //Task task = Manager.AddFilesFromYandexMusic();
+            //task.Wait();
 
-            //Test();
-            //TestTabLib();
-            //AddNewFiles(@"D:\other");
+            ////Test();
+            ////TestTabLib();
+            ////AddNewFiles(@"D:\other");
+            Manager.PrintMessage();
         }
 
 

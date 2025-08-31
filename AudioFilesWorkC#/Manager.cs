@@ -47,19 +47,40 @@ namespace AudioFilesWorkC_
                 else
                     Console.WriteLine("Такого пути не существует.");
             }
-            while (true)
+            bool isWork = true;
+            while (isWork)
             {
                 Console.WriteLine("Выберите действие:");
                 Console.WriteLine("y - копирование файлов из Яндекс Музыка в указанную папку.");
-                Console.WriteLine("d - копирование файлов из выбранной папки в  указанную папку");
+                Console.WriteLine("d - добавление файлов из выбранной папки в  указанную папку");
+                Console.WriteLine("e - для завершения работы");
                 action = Console.ReadLine();
                 switch (action)
                 {
                     case "y":
-                        Console.WriteLine("вызов метода у");
+                        //Console.WriteLine("вызов метода у");
+                        AddFilesYandexMusic();
                         break;
                     case "d":
-                        Console.WriteLine("вызов метода d");
+                        string pathOther = "";
+                        while (true)
+                        {
+                            Console.WriteLine("Укажите путь к папке c файлами для добавления:");
+                            var path = Console.ReadLine();
+                            if (path != null) pathOther = path;
+                            if (Path.Exists(pathOther))
+                            {
+                                break;
+                            }
+                            else
+                                Console.WriteLine("Такого пути не существует.");
+                        }
+                        AddFilesOther(pathOther);
+                        ;
+                        break;
+
+                    case "e":
+                        isWork = false;
                         break;
                     default:
                         Console.WriteLine("действие выбрано не корректно:");
@@ -411,6 +432,8 @@ namespace AudioFilesWorkC_
                 if (Manager.IsAudio(item))
                 {
                     Track track = Manager.CreateTrackFromFileInfo(item);
+
+                    FileInfo file_destination = new FileInfo(Path.Combine(Manager.pathDestination, item.Name));
                     int rows = Manager.InsertData(track, pathDbDestination, "Other");
 
                     bool isCopy = Manager.Copy(item, YandexMusic.PathCopyTo);
@@ -445,6 +468,18 @@ namespace AudioFilesWorkC_
         {
             Task task_add = Task.Run(() => AddNewFiles(pathDir));
             await task_add;
+        }
+
+        static void AddFilesYandexMusic()
+        {
+            Task task = Manager.AddFilesFromYandexMusic();
+            task.Wait();
+
+        }
+        static void AddFilesOther(string pathDir)
+        {
+            Task task = Manager.AddNewFilesToDestination(pathDir);
+            task.Wait();
         }
 
     }

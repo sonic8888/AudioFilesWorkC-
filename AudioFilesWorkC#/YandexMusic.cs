@@ -151,7 +151,13 @@ namespace AudioFilesWorkC_
         /// <returns>имя трека + (артист)</returns>
         private static string GetName(Track track) => $"{track.Name}{track.Extension}";
 
-        private static Action<Track> RenameCopy(Track track)
+        /// <summary>
+        /// Если файл с таким именем уже сужествует то 
+        /// к имени файла добавляем: (n).
+        /// </summary>
+        /// <param name="track"></param>
+        /// <returns></returns>
+        internal static Action<Track> RenameCopy(Track track)
         {
             int number = 1;
             void CreateCopyName(Track track)
